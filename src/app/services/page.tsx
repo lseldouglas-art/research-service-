@@ -1,8 +1,5 @@
 import Link from 'next/link';
-import { 
-  ArrowLeft, ArrowRight, CheckCircle, Clock, Target, Users, Zap, Search, 
-  FileText, PenTool, FileCheck, Shield, MessageCircle, Phone, AlertCircle 
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Clock, Target, Users, Zap, Search, FileText, PenTool, FileCheck } from 'lucide-react';
 
 export default function ServicesPage() {
   const services = [
@@ -26,8 +23,6 @@ export default function ServicesPage() {
         '寻找创新选题方向的科研人员',
       ],
       timeline: '3-5个工作日',
-      priceRange: '800 - 2,000',
-      priceNote: '根据文献数量和检索深度',
     },
     {
       id: 'outline',
@@ -49,8 +44,6 @@ export default function ServicesPage() {
         '希望提高论文逻辑性的作者',
       ],
       timeline: '5-7个工作日',
-      priceRange: '1,200 - 3,000',
-      priceNote: '根据论文类型和文献量',
     },
     {
       id: 'writing',
@@ -73,8 +66,6 @@ export default function ServicesPage() {
         '担心AI痕迹过重的作者',
       ],
       timeline: '7-14个工作日',
-      priceRange: '2,000 - 5,000',
-      priceNote: '根据论文篇幅和润色深度',
     },
     {
       id: 'format',
@@ -96,8 +87,6 @@ export default function ServicesPage() {
         '需要配图设计支持的研究者',
       ],
       timeline: '3-5个工作日',
-      priceRange: '600 - 1,500',
-      priceNote: '根据格式复杂度和配图需求',
     },
   ];
 
@@ -106,48 +95,23 @@ export default function ServicesPage() {
       name: '单项服务',
       description: '根据需要选择任一服务阶段',
       price: '按需报价',
-      priceDetail: '¥600 - ¥5,000',
-      features: [
-        '灵活选择服务内容',
-        '独立交付验收',
-        '专业团队支持',
-        '3-14个工作日',
-      ],
+      features: ['灵活选择服务内容', '独立交付验收', '专业团队支持'],
       recommended: false,
     },
     {
       name: '组合服务',
       description: '选择2-3个服务阶段组合',
       price: '享9折优惠',
-      priceDetail: '¥3,500 - ¥8,000',
-      features: [
-        '阶段无缝衔接',
-        '整体流程优化',
-        '专属服务经理',
-        '优先响应处理',
-      ],
+      features: ['阶段无缝衔接', '整体流程优化', '专属服务经理'],
       recommended: true,
     },
     {
       name: '全流程服务',
       description: '从选题到投稿的一站式支持',
       price: '享85折优惠',
-      priceDetail: '¥4,000 - ¥10,000',
-      features: [
-        '完整服务周期',
-        '全程跟踪管理',
-        '质量保障承诺',
-        '加急服务可选',
-      ],
+      features: ['完整服务周期', '全程跟踪管理', '质量保障承诺'],
       recommended: false,
     },
-  ];
-
-  const priceFactors = [
-    { factor: '服务类型', desc: '单项服务价格不同，组合享折扣' },
-    { factor: '论文篇幅', desc: '字数/页数影响工作量' },
-    { factor: '紧急程度', desc: '加急服务加收30%-50%' },
-    { factor: '专业领域', desc: '特殊领域可能需要额外专家' },
   ];
 
   return (
@@ -173,19 +137,6 @@ export default function ServicesPage() {
               服务流程
             </Link>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-[#1A3A2F]">
-              <Phone className="w-4 h-4 text-[#C9A227]" />
-              <span className="font-medium">400-XXX-XXXX</span>
-            </div>
-            <Link 
-              href="/services" 
-              className="px-4 py-2 bg-[#1A3A2F] text-[#FAFAF7] text-sm font-medium rounded-sm hover:bg-[#2A5244] transition-colors"
-            >
-              立即咨询
-            </Link>
-          </div>
         </div>
       </nav>
 
@@ -207,36 +158,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Quick Pricing Overview */}
-      <section className="pb-12 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-[#1A3A2F] rounded-sm p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-center md:text-left">
-                <div className="text-[#C9A227] text-sm font-medium mb-1">价格参考</div>
-                <div className="text-[#FAFAF7]">
-                  <span className="font-serif text-3xl font-bold">¥600</span>
-                  <span className="text-[#9ACFB0] mx-2">-</span>
-                  <span className="font-serif text-3xl font-bold">¥10,000</span>
-                </div>
-                <div className="text-[#9ACFB0] text-sm mt-1">根据服务类型和复杂程度定价</div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center px-4">
-                  <div className="text-[#C9A227] font-serif text-xl font-bold">9折</div>
-                  <div className="text-[#9ACFB0] text-xs">组合优惠</div>
-                </div>
-                <div className="w-px h-10 bg-[#3A6A59]" />
-                <div className="text-center px-4">
-                  <div className="text-[#C9A227] font-serif text-xl font-bold">85折</div>
-                  <div className="text-[#9ACFB0] text-xs">全流程</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Services List */}
       <section className="pb-20 px-6">
         <div className="max-w-5xl mx-auto space-y-8">
@@ -254,14 +175,6 @@ export default function ServicesPage() {
                   <service.icon className="w-12 h-12 mb-4 text-[#C9A227]" />
                   <h2 className="text-xl font-serif font-semibold mb-1">{service.title}</h2>
                   <div className="text-xs text-[#9ACFB0]">{service.subtitle}</div>
-                  
-                  {/* Price in header */}
-                  <div className="mt-6 pt-4 border-t border-[#3A6A59]">
-                    <div className="text-xs text-[#9ACFB0] mb-1">参考价格</div>
-                    <div className="text-[#C9A227] font-serif font-bold">
-                      ¥{service.priceRange}
-                    </div>
-                  </div>
                 </div>
                 
                 {/* Content */}
@@ -303,14 +216,9 @@ export default function ServicesPage() {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-[#E5E8E7]">
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-[#6B706F]">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span>预计周期：{service.timeline}</span>
-                      </div>
-                      <div className="text-[#C9A227]">
-                        {service.priceNote}
-                      </div>
+                    <div className="flex items-center gap-2 text-sm text-[#6B706F]">
+                      <Clock className="w-4 h-4" />
+                      <span>预计周期：{service.timeline}</span>
                     </div>
                     <button className="inline-flex items-center gap-2 px-6 py-2 bg-[#1A3A2F] text-[#FAFAF7] text-sm font-medium rounded-sm hover:bg-[#2A5244] transition-colors">
                       咨询此服务
@@ -330,7 +238,6 @@ export default function ServicesPage() {
           <div className="text-center mb-12">
             <span className="text-[#C9A227] font-serif text-sm tracking-widest">PACKAGES</span>
             <h2 className="text-3xl font-serif font-semibold text-[#1A3A2F] mt-3">服务套餐</h2>
-            <p className="text-[#6B706F] mt-2 text-sm">选择适合您的服务组合，享受更多优惠</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-6">
@@ -352,10 +259,7 @@ export default function ServicesPage() {
                 <h3 className="text-xl font-serif font-semibold text-[#1A3A2F] mb-2">{pkg.name}</h3>
                 <p className="text-sm text-[#6B706F] mb-4">{pkg.description}</p>
                 
-                <div className="mb-2">
-                  <span className="font-serif text-2xl font-bold text-[#C9A227]">{pkg.priceDetail}</span>
-                </div>
-                <div className="text-sm text-[#6B706F] mb-6">{pkg.price}</div>
+                <div className="font-serif text-2xl font-bold text-[#C9A227] mb-6">{pkg.price}</div>
                 
                 <ul className="space-y-3 mb-8">
                   {pkg.features.map((feature, i) => (
@@ -367,7 +271,7 @@ export default function ServicesPage() {
                 </ul>
                 
                 <button 
-                  className={`w-full py-2.5 text-sm font-medium rounded-sm transition-all ${
+                  className={`w-full py-2 text-sm font-medium rounded-sm transition-all ${
                     pkg.recommended 
                       ? 'bg-[#1A3A2F] text-[#FAFAF7] hover:bg-[#2A5244]' 
                       : 'border-2 border-[#1A3A2F] text-[#1A3A2F] hover:bg-[#1A3A2F] hover:text-[#FAFAF7]'
@@ -377,32 +281,6 @@ export default function ServicesPage() {
                 </button>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Price Factors */}
-      <section className="py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-serif font-semibold text-[#1A3A2F]">价格影响因素</h2>
-          </div>
-          
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {priceFactors.map((item, index) => (
-              <div key={index} className="bg-white border border-[#E5E8E7] rounded-sm p-4 text-center">
-                <div className="text-[#C9A227] font-medium mb-2">{item.factor}</div>
-                <div className="text-sm text-[#6B706F]">{item.desc}</div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-8 p-4 bg-[#FAF5D6] border border-[#C9A227]/30 rounded-sm flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-[#C9A227] shrink-0 mt-0.5" />
-            <div className="text-sm text-[#1A3A2F]">
-              <strong>加急服务：</strong>需要在标准周期内提前完成，可提供加急服务选项，加收30%-50%费用。
-              具体价格请咨询客服获取详细报价。
-            </div>
           </div>
         </div>
       </section>
@@ -441,40 +319,6 @@ export default function ServicesPage() {
                 </div>
                 <h3 className="text-[#FAFAF7] font-medium mb-2">专业团队</h3>
                 <p className="text-sm text-[#9ACFB0]">资深科研背景，理解学术需求</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact CTA */}
-      <section className="py-16 px-6 bg-white border-y border-[#E5E8E7]">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-serif font-semibold text-[#1A3A2F] mb-4">
-            需要详细报价？
-          </h2>
-          <p className="text-[#6B706F] mb-8">
-            联系我们，提供您的论文基本信息，我们将为您提供详细的定制化报价方案
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <div className="flex items-center gap-3 text-[#1A3A2F]">
-              <div className="w-10 h-10 bg-[#1A3A2F] rounded-full flex items-center justify-center">
-                <Phone className="w-5 h-5 text-[#C9A227]" />
-              </div>
-              <div className="text-left">
-                <div className="text-xs text-[#6B706F]">服务热线</div>
-                <div className="font-medium">400-XXX-XXXX</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3 text-[#1A3A2F]">
-              <div className="w-10 h-10 bg-[#1A3A2F] rounded-full flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-[#C9A227]" />
-              </div>
-              <div className="text-left">
-                <div className="text-xs text-[#6B706F]">在线咨询</div>
-                <div className="font-medium">24小时内响应</div>
               </div>
             </div>
           </div>
