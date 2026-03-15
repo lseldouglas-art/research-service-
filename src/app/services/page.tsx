@@ -28,6 +28,13 @@ const onlineTools = [
     icon: Search,
     color: 'from-blue-500 to-cyan-500',
   },
+  {
+    title: '选题分析器',
+    description: '上传文献库，AI分析选题方向',
+    href: '/tools/topic-analysis',
+    icon: Sparkles,
+    color: 'from-green-500 to-blue-500',
+  },
 ];
 
 export default function ServicesPage() {
