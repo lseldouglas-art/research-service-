@@ -149,6 +149,26 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Online Tools Section */}
+      <section className="py-12 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge variant="outline" className="mb-4">在线工具</Badge>
+            <h2 className="text-2xl font-bold mb-4">免费使用智能检索工具</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">
+              AI驱动，自动生成专业级文献检索式，支持中英文全学科全数据库
+            </p>
+            <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Link href="/tools/literature-search">
+                <Search className="mr-2 h-5 w-5" />
+                开始使用文献检索工具
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Core Services Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">

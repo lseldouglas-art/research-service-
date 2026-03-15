@@ -13,9 +13,22 @@ import {
   Clock,
   Users,
   Target,
-  Zap
+  Zap,
+  ExternalLink,
+  Wrench
 } from 'lucide-react';
 import Link from 'next/link';
+
+// 在线工具列表
+const onlineTools = [
+  {
+    title: '文献检索式生成器',
+    description: 'AI驱动，自动生成专业检索式',
+    href: '/tools/literature-search',
+    icon: Search,
+    color: 'from-blue-500 to-cyan-500',
+  },
+];
 
 export default function ServicesPage() {
   const services = [
@@ -40,6 +53,7 @@ export default function ServicesPage() {
       timeline: '3-5个工作日',
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'from-blue-50 to-white dark:from-blue-950/50 dark:to-slate-900',
+      toolLink: '/tools/literature-search',
     },
     {
       id: 'outline-design',
@@ -154,14 +168,37 @@ export default function ServicesPage() {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           {/* Page Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">科研辅助服务</Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               专业科研辅助服务
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto mb-6">
               基于训练营验证的高效工作流，将四个阶段转化为灵活可选的专业服务
             </p>
+            
+            {/* 在线工具入口 */}
+            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-2 mb-8">
+              <CardContent className="py-4">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Wrench className="w-5 h-5 text-blue-600" />
+                    <span className="font-medium">在线工具</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {onlineTools.map((tool, i) => (
+                      <Button key={i} asChild variant="outline" size="sm" className="bg-white dark:bg-slate-800">
+                        <Link href={tool.href}>
+                          <tool.icon className="mr-2 h-4 w-4" />
+                          {tool.title}
+                          <ExternalLink className="ml-2 h-3 w-3" />
+                        </Link>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Services Grid */}
@@ -219,9 +256,19 @@ export default function ServicesPage() {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t">
-                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm">预计周期：{service.timeline}</span>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm">预计周期：{service.timeline}</span>
+                        </div>
+                        {service.toolLink && (
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={service.toolLink}>
+                              <Wrench className="mr-1 h-4 w-4" />
+                              在线工具
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                       <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                         咨询此服务
