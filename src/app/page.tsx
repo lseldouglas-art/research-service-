@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, FileText, GraduationCap, Layers, CheckCircle } from 'lucide-react';
+import { ArrowRight, FileText, GraduationCap, Layers, CheckCircle, Users, Award, BookOpen, Shield, Sparkles, MessageCircleQuestion, Quote, Star } from 'lucide-react';
 
 export default function Home() {
   const services = [
@@ -47,6 +47,60 @@ export default function Home() {
     'AI作为科研助理提高效率',
     '资深科研背景团队支持',
     '完善的售后服务保障',
+  ];
+
+  const differentiators = [
+    {
+      icon: Sparkles,
+      title: '人机协同方法论',
+      description: '不是AI替代人，而是AI辅助人。我们教授您如何与AI高效协作，而非依赖。',
+    },
+    {
+      icon: BookOpen,
+      title: '训练营+服务双模式',
+      description: '既能学习掌握方法论，也能直接获得专业服务支持。授人以渔，也授人以鱼。',
+    },
+    {
+      icon: Shield,
+      title: '学术诚信保障',
+      description: '严格遵循学术规范，确保原创性。事实核查、引用验证、AIGC率优化三重保障。',
+    },
+  ];
+
+  const testimonials = [
+    {
+      quote: '从选题到投稿，整个流程都有专业指导。不仅帮我完成了论文，更教会了我系统的研究方法。',
+      author: '某高校博士研究生',
+      field: '教育学',
+      rating: 5,
+    },
+    {
+      quote: '文献检索服务非常专业，帮我发现了之前完全忽略的重要文献，让综述质量提升了一个档次。',
+      author: '某研究院副研究员',
+      field: '生物医学',
+      rating: 5,
+    },
+    {
+      quote: '培训课程的内容非常实用，现在我已经能独立运用这套方法来处理日常的学术写作了。',
+      author: '某高校青年教师',
+      field: '计算机科学',
+      rating: 5,
+    },
+  ];
+
+  const faqs = [
+    {
+      question: '服务是否涉及学术不端？',
+      answer: '我们提供的是科研辅助服务，帮助研究者提高效率、规范流程。所有产出均需研究者本人把关和确认，确保学术诚信。',
+    },
+    {
+      question: '与直接用AI写论文有什么区别？',
+      answer: '我们将AI定位为"科研助理"，而非"论文代写"。通过人机协同，您始终保持主导地位，AI只是提高效率的工具。',
+    },
+    {
+      question: '服务周期一般需要多久？',
+      answer: '根据服务类型不同，单项服务3-14个工作日，全流程服务2-4周。具体时间根据您的需求和进度安排确定。',
+    },
   ];
 
   return (
@@ -137,6 +191,37 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Differentiators Section - NEW */}
+      <section className="py-20 px-6 bg-[#F2F4F3]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">WHY DIFFERENT</span>
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-[#1A3A2F] mt-3">
+              我们的不同之处
+            </h2>
+            <p className="text-[#6B706F] mt-4 max-w-2xl mx-auto">
+              不只是工具，不只是服务，是一套完整的科研能力提升体系
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {differentiators.map((item, index) => (
+              <div key={index} className="bg-white border border-[#E5E8E7] rounded-sm p-8 group hover:border-[#C9A227] transition-all">
+                <div className="w-12 h-12 bg-[#FAF5D6] rounded-sm flex items-center justify-center mb-6 group-hover:bg-[#C9A227] transition-colors">
+                  <item.icon className="w-6 h-6 text-[#C9A227] group-hover:text-[#1A3A2F] transition-colors" />
+                </div>
+                <h3 className="text-xl font-serif font-semibold text-[#1A3A2F] mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-[#6B706F] leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
       <section className="py-20 px-6">
         <div className="max-w-5xl mx-auto">
@@ -217,6 +302,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section - NEW */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">TESTIMONIALS</span>
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-[#1A3A2F] mt-3">
+              学员与服务对象评价
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((item, index) => (
+              <div key={index} className="bg-[#FAFAF7] border border-[#E5E8E7] rounded-sm p-8">
+                <Quote className="w-8 h-8 text-[#C9A227] opacity-30 mb-4" />
+                
+                <div className="flex gap-1 mb-4">
+                  {[...Array(item.rating)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-[#C9A227] text-[#C9A227]" />
+                  ))}
+                </div>
+                
+                <p className="text-sm text-[#6B706F] leading-relaxed mb-6 italic">
+                  &ldquo;{item.quote}&rdquo;
+                </p>
+                
+                <div className="border-t border-[#E5E8E7] pt-4">
+                  <div className="font-medium text-[#1A3A2F] text-sm">{item.author}</div>
+                  <div className="text-xs text-[#C9A227]">{item.field}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Why Choose Us */}
       <section className="py-20 px-6">
         <div className="max-w-5xl mx-auto">
@@ -257,6 +377,32 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section - NEW */}
+      <section className="py-20 px-6 bg-[#F2F4F3]">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">FAQ</span>
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-[#1A3A2F] mt-3">
+              常见问题
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            {faqs.map((item, index) => (
+              <div key={index} className="bg-white border border-[#E5E8E7] rounded-sm p-6">
+                <div className="flex gap-4">
+                  <MessageCircleQuestion className="w-5 h-5 text-[#C9A227] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-[#1A3A2F] mb-2">{item.question}</h3>
+                    <p className="text-sm text-[#6B706F] leading-relaxed">{item.answer}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
