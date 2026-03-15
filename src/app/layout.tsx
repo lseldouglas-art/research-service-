@@ -1,34 +1,34 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inspector } from 'react-dev-inspector';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'AI辅助学术写作训练营 | 扣子编程',
-    template: '%s | 扣子编程',
+    default: '科研服务站 | 专业学术辅助服务',
+    template: '%s | 科研服务站',
   },
   description:
-    '建立人机高效协同的工业化工作流。我们不追求让AI替代思考，而是将AI作为一名强大的科研助理，把研究者从繁琐、重复的机械性工作中解放出来。',
+    '专业科研辅助服务平台，基于人机协同的工业化工作流，提供从选题到发表的全流程科研支持。文献检索、论文写作、润色精修、格式规范，一站式解决方案。',
   keywords: [
-    'AI写作',
+    '科研服务',
     '学术写作',
-    '文献综述',
-    '科研助手',
-    '论文写作',
-    'AI辅助',
-    '学术研究',
-    '文献管理',
-    'Zotero',
-    '科研工具',
+    '论文润色',
+    '文献检索',
+    'AI辅助写作',
+    '科研培训',
+    '综述写作',
+    'Zotero管理',
+    '学术支持',
+    '论文服务',
   ],
-  authors: [{ name: 'Coze Code Team', url: 'https://code.coze.cn' }],
+  authors: [{ name: '科研服务站', url: 'https://code.coze.cn' }],
   generator: 'Coze Code',
   openGraph: {
-    title: 'AI辅助学术写作训练营 | 建立人机高效协同的工业化工作流',
+    title: '科研服务站 | 专业学术辅助服务平台',
     description:
-      '建立人机高效协同的工业化工作流。将AI作为强大的科研助理，专注于学术思想创新。',
+      '专业科研辅助服务平台，基于人机协同的工业化工作流，提供从选题到发表的全流程科研支持。',
     url: 'https://code.coze.cn',
-    siteName: 'AI辅助学术写作训练营',
+    siteName: '科研服务站',
     locale: 'zh_CN',
     type: 'website',
   },
@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#1A3A2F',
 };
 
 export default function RootLayout({
@@ -46,8 +52,17 @@ export default function RootLayout({
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
-    <html lang="en">
-      <body className={`antialiased`}>
+    <html lang="zh-CN" className="scroll-smooth">
+      <head>
+        {/* Google Fonts - Cormorant Garamond (衬线体) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="antialiased bg-[#FAFAF7] text-[#1E2120] font-sans">
         {isDev && <Inspector />}
         {children}
       </body>

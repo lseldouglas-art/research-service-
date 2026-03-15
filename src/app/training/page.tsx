@@ -1,27 +1,8 @@
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { 
-  ArrowLeft,
-  GraduationCap,
-  BookOpen,
-  Video,
-  Users,
-  MessageCircle,
-  FileText,
-  Award,
-  CheckCircle2,
-  ArrowRight,
-  Sparkles,
-  Clock,
-  Download,
-  HeartHandshake
-} from 'lucide-react';
 import Link from 'next/link';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ArrowRight, BookOpen, CheckCircle, Clock, Download, FileText, GraduationCap, MessageCircle, Sparkles, Users, Video } from 'lucide-react';
 
 export default function TrainingPage() {
-  const courseModules = [
+  const modules = [
     {
       module: 1,
       title: '智能定向与文献基石构建',
@@ -33,7 +14,6 @@ export default function TrainingPage() {
         { ep: '第4集', title: '智能分析与选题决策', content: 'AI辅助领域分析报告，识别研究空白，推荐具体综述选题方向' },
         { ep: '第5集', title: '精准文献重检索', content: '矩阵式检索策略，构建100-600篇高度相关的专业文献库' },
       ],
-      color: 'from-blue-500 to-cyan-500',
     },
     {
       module: 2,
@@ -42,9 +22,8 @@ export default function TrainingPage() {
       description: '将无序文献转化为逻辑严密、章节分明的写作蓝图',
       lessons: [
         { ep: '第6.1集', title: '数据驱动的综述大纲', content: 'AI分析文献相关性，构建经过文献数量验证的可执行写作大纲' },
-        { ep: '第7集', title: '文献智能分类与结构化管理', content: '使用工具箱自动将章节标签和论文编号批量写入Zotero（流程已升级）' },
+        { ep: '第7集', title: '文献智能分类与管理', content: '使用工具箱自动将章节标签和论文编号批量写入Zotero（流程已升级）' },
       ],
-      color: 'from-purple-500 to-pink-500',
     },
     {
       module: 3,
@@ -52,15 +31,12 @@ export default function TrainingPage() {
       episodes: '第8-13集',
       description: '完成论文初稿，进行事实核查、语言润色和原创性重写',
       lessons: [
-        { ep: '第8集', title: '分章节智能写作', content: '三轮AI辅助写作流程：深度分析、论点聚类、引用补全，完成段落初稿' },
-        { ep: '第9.1集', title: '段落精修（对标范文）', content: '对标顶刊范文，明确修改方向，提升学术表达水平' },
-        { ep: '第9.2集', title: '事实核查与准确性验证', content: '系统化核查原文引用，确保内容准确可靠' },
-        { ep: '第10集', title: '引言构建', content: '使用特化提示词，完成引言部分的撰写和精修' },
-        { ep: '第11集', title: '结论与展望构建', content: '系统化完成论文收尾部分，确保逻辑完整' },
-        { ep: '第13集', title: '降低AIGC率与原创性重塑', content: '掌握"用自己的话重说一遍"核心心法，通过AIGC检测' },
-        { ep: '第14集', title: '摘要构建', content: '完成论文门面部分，打造高质量摘要' },
+        { ep: '第8集', title: '分章节智能写作', content: '三轮AI辅助写作流程：深度分析、论点聚类、引用补全' },
+        { ep: '第9.1集', title: '段落精修', content: '对标顶刊范文，明确修改方向，提升学术表达水平' },
+        { ep: '第9.2集', title: '事实核查', content: '系统化核查原文引用，确保内容准确可靠' },
+        { ep: '第10-14集', title: '引言/结论/摘要构建', content: '使用特化提示词完成论文开篇、收尾和门面部分' },
+        { ep: '第13集', title: '降低AIGC率', content: '掌握"用自己的话重说一遍"核心心法，通过AIGC检测' },
       ],
-      color: 'from-orange-500 to-red-500',
     },
     {
       module: 4,
@@ -68,58 +44,24 @@ export default function TrainingPage() {
       episodes: '第12、15、16集',
       description: '完成配图、参考文献格式化等收尾工作，准备最终提交',
       lessons: [
-        { ep: '第12集', title: '论文配图策略与获取', content: 'AI分析顶刊配图策略，制定配图计划，处理版权授权' },
-        { ep: '第15集', title: '参考文献插入（常规）', content: '使用Zotero Word插件"边写边引"的标准流程' },
-        { ep: '第16集', title: '参考文献管理（推荐）', content: '使用自动化脚本一键完成引用替换和参考文献列表生成' },
+        { ep: '第12集', title: '论文配图策略', content: 'AI分析顶刊配图策略，制定配图计划，处理版权授权' },
+        { ep: '第15-16集', title: '参考文献管理', content: '使用自动化脚本一键完成引用替换和参考文献列表生成' },
       ],
-      color: 'from-green-500 to-teal-500',
     },
   ];
 
   const tools = [
-    {
-      name: '论文分割器',
-      icon: FileText,
-      description: '批量处理文献，将上百篇文献分割成AI可处理的小文件',
-    },
-    {
-      name: 'BibTeX 标签同步器',
-      icon: Download,
-      description: '将AI分析结果自动同步到Zotero文献库中',
-    },
-    {
-      name: '章节筛选器',
-      icon: BookOpen,
-      description: '快速筛选出特定章节相关的所有文献',
-    },
-    {
-      name: '引用编号补全器',
-      icon: FileText,
-      description: '根据段落大纲精准提取写作所需的具体文献信息',
-    },
+    { name: '论文分割器', icon: FileText, desc: '批量处理文献，分割成AI可处理的小文件' },
+    { name: 'BibTeX同步器', icon: Download, desc: '将AI分析结果自动同步到Zotero文献库' },
+    { name: '章节筛选器', icon: BookOpen, desc: '快速筛选出特定章节相关的所有文献' },
+    { name: '引用补全器', icon: FileText, desc: '根据段落大纲精准提取所需文献信息' },
   ];
 
   const benefits = [
-    {
-      icon: Video,
-      title: '系统化课程',
-      description: '16集完整视频课程，覆盖从选题到投稿全流程',
-    },
-    {
-      icon: FileText,
-      title: '配套工具箱',
-      description: '四合一整合版论文处理工具，自动化繁琐工作',
-    },
-    {
-      icon: Users,
-      title: '私域社群',
-      description: '加入专属学员社群，持续答疑和交流',
-    },
-    {
-      icon: MessageCircle,
-      title: '答疑支持',
-      description: '专业助教团队，解答学习中的各类问题',
-    },
+    { icon: Video, title: '系统化课程', desc: '16集完整视频课程，覆盖全流程' },
+    { icon: FileText, title: '配套工具箱', desc: '四合一整合版论文处理工具' },
+    { icon: Users, title: '私域社群', desc: '加入专属学员社群，持续交流' },
+    { icon: MessageCircle, title: '答疑支持', desc: '专业助教团队，解答各类问题' },
   ];
 
   const highlights = [
@@ -131,213 +73,242 @@ export default function TrainingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button asChild variant="ghost">
-              <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                返回首页
-              </Link>
-            </Button>
-            <Badge variant="outline" className="text-sm">
-              科研培训服务
-            </Badge>
+    <div className="min-h-screen bg-[#FAFAF7]">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAF7]/90 backdrop-blur-sm border-b border-[#E5E8E7]">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#1A3A2F] rounded-sm flex items-center justify-center">
+              <span className="text-[#C9A227] font-serif font-bold text-lg">R</span>
+            </div>
+            <span className="font-serif font-semibold text-[#1A3A2F] text-lg">科研服务站</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="/services" className="text-sm text-[#6B706F] hover:text-[#1A3A2F] transition-colors">
+              服务内容
+            </Link>
+            <Link href="/training" className="text-sm text-[#1A3A2F] font-medium">
+              培训课程
+            </Link>
+            <Link href="/workflow" className="text-sm text-[#6B706F] hover:text-[#1A3A2F] transition-colors">
+              服务流程
+            </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-6xl mx-auto">
-          {/* Page Header */}
-          <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4">科研培训服务</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              AI辅助学术写作训练营
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto mb-8">
-              系统化掌握人机协同的高效工作方法，将AI作为强大的科研助理
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                立即报名
-                <ArrowRight className="ml-2 w-4 w-4" />
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="#curriculum">
-                  查看课程大纲
-                </Link>
-              </Button>
-            </div>
+      {/* Header */}
+      <section className="pt-32 pb-16 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-12 h-px bg-[#C9A227]" />
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">TRAINING PROGRAM</span>
+            <div className="w-12 h-px bg-[#C9A227]" />
           </div>
+          
+          <h1 className="text-4xl md:text-5xl font-serif font-semibold text-[#1A3A2F] mb-4">
+            AI辅助学术写作训练营
+          </h1>
+          <p className="text-lg text-[#6B706F] max-w-2xl mx-auto mb-8">
+            系统化掌握人机协同的高效工作方法，将AI作为强大的科研助理
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#1A3A2F] text-[#FAFAF7] font-medium rounded-sm hover:bg-[#2A5244] transition-all">
+              立即报名
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <Link 
+              href="#curriculum"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 border-2 border-[#1A3A2F] text-[#1A3A2F] font-medium rounded-sm hover:bg-[#1A3A2F] hover:text-[#FAFAF7] transition-all"
+            >
+              查看课程大纲
+            </Link>
+          </div>
+        </div>
+      </section>
 
-          {/* Key Benefits */}
-          <div className="grid md:grid-cols-4 gap-4 mb-16">
+      {/* Benefits */}
+      <section className="py-12 px-6 border-y border-[#E5E8E7] bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {benefits.map((benefit, index) => (
-              <Card key={index} className="text-center">
-                <CardContent className="pt-6">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
-                    <benefit.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold mb-1">{benefit.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{benefit.description}</p>
-                </CardContent>
-              </Card>
+              <div key={index} className="text-center">
+                <div className="w-12 h-12 mx-auto mb-3 border-2 border-[#C9A227] rounded-full flex items-center justify-center">
+                  <benefit.icon className="w-5 h-5 text-[#C9A227]" />
+                </div>
+                <h3 className="font-medium text-[#1A3A2F] text-sm mb-1">{benefit.title}</h3>
+                <p className="text-xs text-[#6B706F]">{benefit.desc}</p>
+              </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* Course Modules */}
-          <div id="curriculum" className="mb-16">
-            <div className="text-center mb-8">
-              <Badge variant="secondary" className="mb-4">课程大纲</Badge>
-              <h2 className="text-3xl font-bold">四大核心模块</h2>
-            </div>
-            
-            <div className="space-y-6">
-              {courseModules.map((module, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <div className={`bg-gradient-to-r ${module.color} p-4 sm:p-6`}>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xl">
-                          {module.module}
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-white">{module.title}</h3>
-                          <Badge variant="secondary" className="bg-white/20 text-white border-0 mt-1">
-                            {module.episodes}
-                          </Badge>
-                        </div>
+      {/* Curriculum */}
+      <section id="curriculum" className="py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">CURRICULUM</span>
+            <h2 className="text-3xl font-serif font-semibold text-[#1A3A2F] mt-3">四大核心模块</h2>
+          </div>
+          
+          <div className="space-y-6">
+            {modules.map((mod, index) => (
+              <div key={index} className="bg-white border border-[#E5E8E7] rounded-sm overflow-hidden">
+                <div className="bg-[#1A3A2F] p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 border-2 border-[#C9A227] rounded-full flex items-center justify-center text-[#FAFAF7] font-serif font-bold">
+                      {mod.module}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-serif font-semibold text-[#FAFAF7]">{mod.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-[#C9A227]">{mod.episodes}</span>
+                        <span className="text-xs text-[#9ACFB0]">• {mod.lessons.length}课时</span>
                       </div>
                     </div>
-                    <p className="text-white/80 mt-3 text-sm">{module.description}</p>
                   </div>
-                  
-                  <CardContent className="p-4 sm:p-6">
-                    <Accordion type="single" collapsible className="w-full">
-                      {module.lessons.map((lesson, lIndex) => (
-                        <AccordionItem key={lIndex} value={`lesson-${index}-${lIndex}`}>
-                          <AccordionTrigger className="hover:no-underline">
-                            <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="shrink-0">{lesson.ep}</Badge>
-                              <span className="font-medium text-left">{lesson.title}</span>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <p className="text-slate-600 dark:text-slate-400 pl-16">
-                              {lesson.content}
-                            </p>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  <p className="text-sm text-[#9ACFB0] mt-4 ml-16">{mod.description}</p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {mod.lessons.map((lesson, lIndex) => (
+                      <div key={lIndex} className="flex gap-3 p-4 bg-[#FAFAF7] rounded-sm">
+                        <div className="text-xs text-[#C9A227] font-medium whitespace-nowrap pt-0.5">
+                          {lesson.ep}
+                        </div>
+                        <div>
+                          <div className="font-medium text-[#1A3A2F] text-sm mb-1">{lesson.title}</div>
+                          <div className="text-xs text-[#6B706F]">{lesson.content}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          {/* Tools Section */}
-          <div className="mb-16">
-            <div className="text-center mb-8">
-              <Badge variant="secondary" className="mb-4">配套工具</Badge>
-              <h2 className="text-3xl font-bold">论文处理工具箱</h2>
-              <p className="text-slate-600 dark:text-slate-400 mt-2">
-                四合一整合版桌面应用，贯穿整个课程流程
-              </p>
+      {/* Tools */}
+      <section className="py-20 px-6 bg-white border-y border-[#E5E8E7]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">TOOLS</span>
+            <h2 className="text-3xl font-serif font-semibold text-[#1A3A2F] mt-3">配套工具箱</h2>
+            <p className="text-[#6B706F] mt-2">四合一整合版桌面应用，贯穿整个课程流程</p>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-4">
+            {tools.map((tool, index) => (
+              <div key={index} className="text-center p-6 bg-[#FAFAF7] border border-[#E5E8E7] rounded-sm">
+                <div className="w-12 h-12 mx-auto mb-4 bg-[#1A3A2F] rounded-sm flex items-center justify-center">
+                  <tool.icon className="w-6 h-6 text-[#C9A227]" />
+                </div>
+                <h3 className="font-medium text-[#1A3A2F] mb-2">{tool.name}</h3>
+                <p className="text-xs text-[#6B706F]">{tool.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Highlights */}
+      <section className="py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* What You Get */}
+            <div className="bg-white border border-[#E5E8E7] rounded-sm p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-[#1A3A2F] rounded-sm flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-[#C9A227]" />
+                </div>
+                <h3 className="text-xl font-serif font-semibold text-[#1A3A2F]">你将获得</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                {highlights.map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-[#C9A227] mt-0.5 flex-shrink-0" />
+                    <span className="text-[#1E2120] text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             
-            <div className="grid md:grid-cols-4 gap-4">
-              {tools.map((tool, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6 text-center">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center mx-auto mb-4">
-                      <tool.icon className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h3 className="font-semibold mb-2">{tool.name}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">{tool.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* What You Will Get */}
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-6 h-6 text-blue-600" />
-                  你将获得
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {highlights.map((item, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 border-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HeartHandshake className="w-6 h-6 text-purple-600" />
-                  培训特色
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 text-slate-600 dark:text-slate-400">
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
-                    <span>实战案例教学，边学边练</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
-                    <span>流程持续迭代，紧跟AI发展</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
-                    <span>专业助教答疑，学习无忧</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
-                    <span>社群资源共享，持续成长</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
-                    <span>支持多轮复训，巩固知识</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* CTA Section */}
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white text-center">
-            <GraduationCap className="w-12 h-12 mx-auto mb-4 opacity-80" />
-            <h2 className="text-2xl font-bold mb-4">准备好提升科研效率了吗？</h2>
-            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
-              加入训练营，掌握人机协同的高效工作方法，让AI成为你的科研助理
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary" className="bg-white text-slate-900 hover:bg-slate-100">
-                立即报名参加
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                咨询课程详情
-              </Button>
+            {/* Features */}
+            <div className="bg-[#1A3A2F] rounded-sm p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-[#C9A227] rounded-sm flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-[#1A3A2F]" />
+                </div>
+                <h3 className="text-xl font-serif font-semibold text-[#FAFAF7]">培训特色</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-[#C9A227] mt-0.5 flex-shrink-0" />
+                  <span className="text-[#9ACFB0] text-sm">实战案例教学，边学边练</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-[#C9A227] mt-0.5 flex-shrink-0" />
+                  <span className="text-[#9ACFB0] text-sm">流程持续迭代，紧跟AI发展</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-[#C9A227] mt-0.5 flex-shrink-0" />
+                  <span className="text-[#9ACFB0] text-sm">专业助教答疑，学习无忧</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-[#C9A227] mt-0.5 flex-shrink-0" />
+                  <span className="text-[#9ACFB0] text-sm">社群资源共享，持续成长</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Sparkles className="w-4 h-4 text-[#C9A227] mt-0.5 flex-shrink-0" />
+                  <span className="text-[#9ACFB0] text-sm">支持多轮复训，巩固知识</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 px-6 bg-[#1A3A2F]">
+        <div className="max-w-3xl mx-auto text-center">
+          <GraduationCap className="w-12 h-12 mx-auto mb-4 text-[#C9A227]" />
+          <h2 className="text-2xl md:text-3xl font-serif font-semibold text-[#FAFAF7] mb-4">
+            准备好提升科研效率了吗？
+          </h2>
+          <p className="text-[#9ACFB0] mb-8">
+            加入训练营，掌握人机协同的高效工作方法
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="px-8 py-3 bg-[#C9A227] text-[#1A3A2F] font-medium rounded-sm hover:bg-[#D4A84A] transition-colors">
+              立即报名参加
+            </button>
+            <button className="px-8 py-3 border-2 border-[#C9A227] text-[#C9A227] font-medium rounded-sm hover:bg-[#C9A227] hover:text-[#1A3A2F] transition-colors">
+              咨询课程详情
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Back to Home */}
+      <section className="py-8 px-6 border-t border-[#E5E8E7]">
+        <div className="max-w-5xl mx-auto text-center">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-[#6B706F] hover:text-[#1A3A2F] transition-colors"
+          >
+            ← 返回首页
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

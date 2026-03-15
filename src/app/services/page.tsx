@@ -1,29 +1,14 @@
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { 
-  ArrowLeft,
-  Search,
-  FileText,
-  PenTool,
-  FileCheck,
-  CheckCircle2,
-  ArrowRight,
-  Sparkles,
-  Clock,
-  Users,
-  Target,
-  Zap
-} from 'lucide-react';
 import Link from 'next/link';
+import { ArrowLeft, ArrowRight, CheckCircle, Clock, Target, Users, Zap, Search, FileText, PenTool, FileCheck } from 'lucide-react';
 
 export default function ServicesPage() {
   const services = [
     {
-      id: 'literature-search',
+      id: 'literature',
       icon: Search,
+      phase: 'Phase 01',
       title: '文献检索与筛选服务',
-      subtitle: '服务阶段一',
+      subtitle: 'Literature Search & Screening',
       description: '从宽泛想法到精准选题，构建高质量文献库',
       details: '基于AI辅助的智能化检索策略，帮助您系统性地构建领域文献库，识别研究空白，确定创新选题方向。',
       deliverables: [
@@ -38,14 +23,13 @@ export default function ServicesPage() {
         '寻找创新选题方向的科研人员',
       ],
       timeline: '3-5个工作日',
-      color: 'from-blue-500 to-cyan-500',
-      bgColor: 'from-blue-50 to-white dark:from-blue-950/50 dark:to-slate-900',
     },
     {
-      id: 'outline-design',
+      id: 'outline',
       icon: FileText,
+      phase: 'Phase 02',
       title: '大纲构建与素材整理服务',
-      subtitle: '服务阶段二',
+      subtitle: 'Outline & Material Organization',
       description: '数据驱动的论文框架设计，文献智能分类管理',
       details: '利用AI分析文献关联性，构建逻辑严密的论文大纲，并将文献智能匹配到各章节，形成结构化写作素材库。',
       deliverables: [
@@ -60,14 +44,13 @@ export default function ServicesPage() {
         '希望提高论文逻辑性的作者',
       ],
       timeline: '5-7个工作日',
-      color: 'from-purple-500 to-pink-500',
-      bgColor: 'from-purple-50 to-white dark:from-purple-950/50 dark:to-slate-900',
     },
     {
-      id: 'writing-support',
+      id: 'writing',
       icon: PenTool,
+      phase: 'Phase 03',
       title: '论文写作与润色服务',
-      subtitle: '服务阶段三',
+      subtitle: 'Writing & Polishing',
       description: 'AI辅助写作、事实核查、语言精修全流程支持',
       details: '提供分章节智能写作辅助，配合专业的事实核查和语言润色，确保论文内容准确、表达专业、原创性高。',
       deliverables: [
@@ -83,14 +66,13 @@ export default function ServicesPage() {
         '担心AI痕迹过重的作者',
       ],
       timeline: '7-14个工作日',
-      color: 'from-orange-500 to-red-500',
-      bgColor: 'from-orange-50 to-white dark:from-orange-950/50 dark:to-slate-900',
     },
     {
-      id: 'formatting',
+      id: 'format',
       icon: FileCheck,
+      phase: 'Phase 04',
       title: '格式规范与收尾服务',
-      subtitle: '服务阶段四',
+      subtitle: 'Formatting & Finalization',
       description: '配图设计、参考文献格式化、最终审校',
       details: '完成论文配图规划与版权处理、参考文献规范化、全文格式统一，确保论文符合目标期刊投稿要求。',
       deliverables: [
@@ -105,8 +87,6 @@ export default function ServicesPage() {
         '需要配图设计支持的研究者',
       ],
       timeline: '3-5个工作日',
-      color: 'from-green-500 to-teal-500',
-      bgColor: 'from-green-50 to-white dark:from-green-950/50 dark:to-slate-900',
     },
   ];
 
@@ -116,6 +96,7 @@ export default function ServicesPage() {
       description: '根据需要选择任一服务阶段',
       price: '按需报价',
       features: ['灵活选择服务内容', '独立交付验收', '专业团队支持'],
+      recommended: false,
     },
     {
       name: '组合服务',
@@ -129,177 +110,233 @@ export default function ServicesPage() {
       description: '从选题到投稿的一站式支持',
       price: '享85折优惠',
       features: ['完整服务周期', '全程跟踪管理', '质量保障承诺'],
+      recommended: false,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Button asChild variant="ghost">
-              <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                返回首页
-              </Link>
-            </Button>
-            <Badge variant="outline" className="text-sm">
-              科研辅助服务
-            </Badge>
+    <div className="min-h-screen bg-[#FAFAF7]">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAF7]/90 backdrop-blur-sm border-b border-[#E5E8E7]">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#1A3A2F] rounded-sm flex items-center justify-center">
+              <span className="text-[#C9A227] font-serif font-bold text-lg">R</span>
+            </div>
+            <span className="font-serif font-semibold text-[#1A3A2F] text-lg">科研服务站</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="/services" className="text-sm text-[#1A3A2F] font-medium">
+              服务内容
+            </Link>
+            <Link href="/training" className="text-sm text-[#6B706F] hover:text-[#1A3A2F] transition-colors">
+              培训课程
+            </Link>
+            <Link href="/workflow" className="text-sm text-[#6B706F] hover:text-[#1A3A2F] transition-colors">
+              服务流程
+            </Link>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-6xl mx-auto">
-          {/* Page Header */}
-          <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4">科研辅助服务</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              专业科研辅助服务
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-              基于训练营验证的高效工作流，将四个阶段转化为灵活可选的专业服务
-            </p>
+      {/* Header */}
+      <section className="pt-32 pb-16 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-12 h-px bg-[#C9A227]" />
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">OUR SERVICES</span>
+            <div className="w-12 h-px bg-[#C9A227]" />
           </div>
+          
+          <h1 className="text-4xl md:text-5xl font-serif font-semibold text-[#1A3A2F] mb-4">
+            专业科研辅助服务
+          </h1>
+          <p className="text-lg text-[#6B706F] max-w-2xl mx-auto">
+            四个阶段灵活可选，根据您的需求定制专属服务方案
+          </p>
+        </div>
+      </section>
 
-          {/* Services Grid */}
-          <div className="space-y-8 mb-16">
-            {services.map((service, index) => (
-              <Card key={index} className={`overflow-hidden bg-gradient-to-br ${service.bgColor} border-2`}>
-                <div className="flex flex-col lg:flex-row">
-                  {/* Service Header */}
-                  <div className={`lg:w-64 bg-gradient-to-br ${service.color} p-6 text-white flex flex-col justify-center`}>
-                    <service.icon className="w-12 h-12 mb-4 opacity-80" />
-                    <Badge className="w-fit bg-white/20 hover:bg-white/30 text-white border-0 mb-2">
-                      {service.subtitle}
-                    </Badge>
-                    <h2 className="text-2xl font-bold">{service.title}</h2>
+      {/* Services List */}
+      <section className="pb-20 px-6">
+        <div className="max-w-5xl mx-auto space-y-8">
+          {services.map((service, index) => (
+            <div 
+              key={index}
+              className="bg-white border border-[#E5E8E7] rounded-sm overflow-hidden group hover:border-[#C9A227] transition-all"
+            >
+              <div className="flex flex-col lg:flex-row">
+                {/* Phase Header */}
+                <div className="lg:w-56 bg-[#1A3A2F] p-8 text-[#FAFAF7] flex flex-col justify-center">
+                  <div className="text-[#C9A227] text-xs font-medium tracking-wider mb-2">
+                    {service.phase}
+                  </div>
+                  <service.icon className="w-12 h-12 mb-4 text-[#C9A227]" />
+                  <h2 className="text-xl font-serif font-semibold mb-1">{service.title}</h2>
+                  <div className="text-xs text-[#9ACFB0]">{service.subtitle}</div>
+                </div>
+                
+                {/* Content */}
+                <div className="flex-1 p-8">
+                  <p className="text-[#6B706F] mb-6 leading-relaxed">{service.details}</p>
+                  
+                  <div className="grid md:grid-cols-2 gap-6 mb-6">
+                    {/* Deliverables */}
+                    <div>
+                      <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1A3A2F] mb-3">
+                        <CheckCircle className="w-4 h-4 text-[#C9A227]" />
+                        服务交付内容
+                      </h3>
+                      <ul className="space-y-2">
+                        {service.deliverables.map((item, i) => (
+                          <li key={i} className="text-sm text-[#6B706F] flex items-start gap-2">
+                            <span className="text-[#C9A227] mt-1">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    {/* Suitable For */}
+                    <div>
+                      <h3 className="flex items-center gap-2 text-sm font-semibold text-[#1A3A2F] mb-3">
+                        <Target className="w-4 h-4 text-[#C9A227]" />
+                        适用场景
+                      </h3>
+                      <ul className="space-y-2">
+                        {service.suitable.map((item, i) => (
+                          <li key={i} className="text-sm text-[#6B706F] flex items-start gap-2">
+                            <span className="text-[#87A878] mt-1">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                   
-                  {/* Service Content */}
-                  <CardContent className="flex-1 p-6 lg:p-8">
-                    <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg">
-                      {service.details}
-                    </p>
-                    
-                    <div className="grid md:grid-cols-2 gap-6 mb-6">
-                      {/* Deliverables */}
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2">
-                          <CheckCircle2 className="w-5 h-5 text-green-600" />
-                          服务交付内容
-                        </h3>
-                        <ul className="space-y-2">
-                          {service.deliverables.map((item, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
-                              <span className="text-green-500 mt-1">•</span>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      {/* Suitable For */}
-                      <div>
-                        <h3 className="font-semibold mb-3 flex items-center gap-2">
-                          <Target className="w-5 h-5 text-purple-600" />
-                          适用场景
-                        </h3>
-                        <ul className="space-y-2">
-                          {service.suitable.map((item, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
-                              <span className="text-purple-500 mt-1">•</span>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-[#E5E8E7]">
+                    <div className="flex items-center gap-2 text-sm text-[#6B706F]">
+                      <Clock className="w-4 h-4" />
+                      <span>预计周期：{service.timeline}</span>
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t">
-                      <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm">预计周期：{service.timeline}</span>
-                      </div>
-                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                        咨询此服务
-                        <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
+                    <button className="inline-flex items-center gap-2 px-6 py-2 bg-[#1A3A2F] text-[#FAFAF7] text-sm font-medium rounded-sm hover:bg-[#2A5244] transition-colors">
+                      咨询此服务
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </Card>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Packages */}
+      <section className="py-20 px-6 bg-white border-y border-[#E5E8E7]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-[#C9A227] font-serif text-sm tracking-widest">PACKAGES</span>
+            <h2 className="text-3xl font-serif font-semibold text-[#1A3A2F] mt-3">服务套餐</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {packages.map((pkg, index) => (
+              <div 
+                key={index}
+                className={`relative bg-[#FAFAF7] border rounded-sm p-8 ${
+                  pkg.recommended ? 'border-[#C9A227] border-2' : 'border-[#E5E8E7]'
+                }`}
+              >
+                {pkg.recommended && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-[#C9A227] text-[#1A3A2F] text-xs font-medium px-3 py-1 rounded-sm">
+                      推荐
+                    </span>
+                  </div>
+                )}
+                
+                <h3 className="text-xl font-serif font-semibold text-[#1A3A2F] mb-2">{pkg.name}</h3>
+                <p className="text-sm text-[#6B706F] mb-4">{pkg.description}</p>
+                
+                <div className="font-serif text-2xl font-bold text-[#C9A227] mb-6">{pkg.price}</div>
+                
+                <ul className="space-y-3 mb-8">
+                  {pkg.features.map((feature, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-[#1E2120]">
+                      <CheckCircle className="w-4 h-4 text-[#87A878]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                
+                <button 
+                  className={`w-full py-2 text-sm font-medium rounded-sm transition-all ${
+                    pkg.recommended 
+                      ? 'bg-[#1A3A2F] text-[#FAFAF7] hover:bg-[#2A5244]' 
+                      : 'border-2 border-[#1A3A2F] text-[#1A3A2F] hover:bg-[#1A3A2F] hover:text-[#FAFAF7]'
+                  }`}
+                >
+                  立即咨询
+                </button>
+              </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* Service Packages */}
-          <div className="mb-16">
-            <div className="text-center mb-8">
-              <Badge variant="secondary" className="mb-4">服务套餐</Badge>
-              <h2 className="text-3xl font-bold">灵活选择，按需定制</h2>
+      {/* Guarantee */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-[#1A3A2F] rounded-sm p-8 md:p-12">
+            <div className="text-center mb-10">
+              <span className="text-[#C9A227] font-serif text-sm tracking-widest">OUR PROMISE</span>
+              <h2 className="text-2xl md:text-3xl font-serif font-semibold text-[#FAFAF7] mt-3">
+                服务承诺
+              </h2>
             </div>
             
-            <div className="grid md:grid-cols-3 gap-6">
-              {packages.map((pkg, index) => (
-                <Card key={index} className={`relative ${pkg.recommended ? 'border-2 border-purple-500 shadow-xl' : ''}`}>
-                  {pkg.recommended && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
-                        推荐
-                      </Badge>
-                    </div>
-                  )}
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-xl">{pkg.name}</CardTitle>
-                    <CardDescription>{pkg.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-center space-y-4">
-                    <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {pkg.price}
-                    </div>
-                    <ul className="space-y-2 text-sm">
-                      {pkg.features.map((feature, i) => (
-                        <li key={i} className="flex items-center justify-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button className={`w-full ${pkg.recommended ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' : ''}`} variant={pkg.recommended ? 'default' : 'outline'}>
-                      立即咨询
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Service Guarantee */}
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white text-center">
-            <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-80" />
-            <h2 className="text-2xl font-bold mb-4">服务承诺</h2>
-            <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div>
-                <Zap className="w-8 h-8 mx-auto mb-2 opacity-80" />
-                <h3 className="font-semibold mb-1">高效响应</h3>
-                <p className="text-sm text-white/80">24小时内响应，快速启动服务</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 border-2 border-[#C9A227] rounded-full flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-[#C9A227]" />
+                </div>
+                <h3 className="text-[#FAFAF7] font-medium mb-2">高效响应</h3>
+                <p className="text-sm text-[#9ACFB0]">24小时内响应，快速启动服务</p>
               </div>
-              <div>
-                <Target className="w-8 h-8 mx-auto mb-2 opacity-80" />
-                <h3 className="font-semibold mb-1">质量保证</h3>
-                <p className="text-sm text-white/80">不满意可修改，直到满意为止</p>
+              
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 border-2 border-[#C9A227] rounded-full flex items-center justify-center">
+                  <Target className="w-6 h-6 text-[#C9A227]" />
+                </div>
+                <h3 className="text-[#FAFAF7] font-medium mb-2">质量保证</h3>
+                <p className="text-sm text-[#9ACFB0]">不满意可修改，直到满意为止</p>
               </div>
-              <div>
-                <Users className="w-8 h-8 mx-auto mb-2 opacity-80" />
-                <h3 className="font-semibold mb-1">专业团队</h3>
-                <p className="text-sm text-white/80">资深科研背景，理解学术需求</p>
+              
+              <div className="text-center">
+                <div className="w-14 h-14 mx-auto mb-4 border-2 border-[#C9A227] rounded-full flex items-center justify-center">
+                  <Users className="w-6 h-6 text-[#C9A227]" />
+                </div>
+                <h3 className="text-[#FAFAF7] font-medium mb-2">专业团队</h3>
+                <p className="text-sm text-[#9ACFB0]">资深科研背景，理解学术需求</p>
               </div>
             </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Back to Home */}
+      <section className="py-8 px-6 border-t border-[#E5E8E7]">
+        <div className="max-w-5xl mx-auto text-center">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-[#6B706F] hover:text-[#1A3A2F] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            返回首页
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
