@@ -3,405 +3,135 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 
- * 学术美学设计系统
- * Academic Aesthetics Design System
- * 灵感：学术期刊 × 植物园档案馆 × 高端咨询
- */
-
 @theme inline {
-  /* 配色系统 - 深墨绿 + 琥珀金 */
-  --color-forest-950: #0D1F17;
-  --color-forest-900: #1A3A2F;
-  --color-forest-800: #2A5244;
-  --color-forest-700: #3A6A59;
-  --color-forest-600: #4A8269;
-  --color-forest-500: #5A9A7A;
-  --color-forest-400: #7AB594;
-  --color-forest-300: #9ACFB0;
-  --color-forest-200: #BAE7CB;
-  --color-forest-100: #DAF7E6;
-  --color-forest-50: #EDFDF2;
-  
-  --color-amber-950: #451A03;
-  --color-amber-900: #692E0A;
-  --color-amber-800: #8D4511;
-  --color-amber-700: #B15C18;
-  --color-amber-600: #C9A227;
-  --color-amber-500: #D4A84A;
-  --color-amber-400: #E0BE6D;
-  --color-amber-300: #EBD490;
-  --color-amber-200: #F5EAB3;
-  --color-amber-100: #FAF5D6;
-  --color-amber-50: #FDFAEB;
-  
-  --color-sage-600: #6B8E6B;
-  --color-sage-500: #87A878;
-  --color-sage-400: #A3C29A;
-  --color-sage-300: #BFDCBC;
-  
-  --color-slate-warm-900: #1E2120;
-  --color-slate-warm-800: #2E3332;
-  --color-slate-warm-700: #4A4F4E;
-  --color-slate-warm-600: #6B706F;
-  --color-slate-warm-500: #8C9190;
-  --color-slate-warm-400: #ADB2B1;
-  --color-slate-warm-300: #CED3D2;
-  --color-slate-warm-200: #E5E8E7;
-  --color-slate-warm-100: #F2F4F3;
-  --color-slate-warm-50: #FAFAF7;
-  
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
-  
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  
-  /* 字体系统 */
-  --font-serif: 'Cormorant Garamond', 'Noto Serif SC', 'Songti SC', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Source Sans 3', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --font-sans:
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', ui-sans-serif,
+    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  --font-serif:
+    'Noto Serif SC', 'Songti SC', 'SimSun', ui-serif, Georgia, Cambria,
+    'Times New Roman', Times, serif;
 }
 
 :root {
-  /* 主色调 - 深墨绿 */
-  --primary: #1A3A2F;
-  --primary-foreground: #FAFAF7;
-  
-  /* 次要色 - 琥珀金 */
-  --accent: #C9A227;
-  --accent-foreground: #1A3A2F;
-  
-  /* 背景系统 */
-  --background: #FAFAF7;
-  --foreground: #1E2120;
-  
-  --card: #FFFFFF;
-  --card-foreground: #1E2120;
-  
-  --popover: #FFFFFF;
-  --popover-foreground: #1E2120;
-  
-  --secondary: #F2F4F3;
-  --secondary-foreground: #1E2120;
-  
-  --muted: #F2F4F3;
-  --muted-foreground: #6B706F;
-  
-  --destructive: #B91C1C;
-  
-  --border: #E5E8E7;
-  --input: #E5E8E7;
-  --ring: #C9A227;
-  
-  /* 特殊颜色 */
-  --color-highlight: #C9A227;
-  --color-highlight-soft: #FAF5D6;
-  --color-divider: #CED3D2;
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  --primary: #7AB594;
-  --primary-foreground: #0D1F17;
-  
-  --accent: #C9A227;
-  --accent-foreground: #0D1F17;
-  
-  --background: #0D1F17;
-  --foreground: #F2F4F3;
-  
-  --card: #1A3A2F;
-  --card-foreground: #F2F4F3;
-  
-  --popover: #1A3A2F;
-  --popover-foreground: #F2F4F3;
-  
-  --secondary: #2A5244;
-  --secondary-foreground: #F2F4F3;
-  
-  --muted: #2A5244;
-  --muted-foreground: #9ACFB0;
-  
-  --destructive: #F87171;
-  
-  --border: #3A6A59;
-  --input: #3A6A59;
-  --ring: #C9A227;
-  
-  --color-highlight: #C9A227;
-  --color-highlight-soft: #451A03;
-  --color-divider: #3A6A59;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
-  
-  html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
-    line-height: 1.6;
-  }
-  
-  /* 标题字体 - 衬线体 */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif);
-    font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-  }
-  
-  h1 { font-size: clamp(2.5rem, 5vw, 4rem); }
-  h2 { font-size: clamp(2rem, 4vw, 3rem); }
-  h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
-  h4 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
-  
-  /* 引用风格 */
-  blockquote {
-    border-left: 3px solid var(--color-highlight);
-    padding-left: 1.5rem;
-    font-style: italic;
-    color: var(--muted-foreground);
-  }
-  
-  /* 选中文字样式 */
-  ::selection {
-    background-color: var(--color-highlight);
-    color: var(--primary);
   }
 }
 
-@layer components {
-  /* 学术风格分割线 */
-  .divider-academic {
-    position: relative;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--color-divider) 20%, var(--color-divider) 80%, transparent);
-  }
-  
-  .divider-academic::before {
-    content: '◆';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--background);
-    padding: 0 0.75rem;
-    color: var(--color-highlight);
-    font-size: 0.75rem;
-  }
-  
-  /* 金色高亮文字 */
-  .text-highlight {
-    color: var(--color-highlight);
-  }
-  
-  .text-gradient-gold {
-    background: linear-gradient(135deg, #C9A227 0%, #D4A84A 50%, #C9A227 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  /* 墨绿渐变背景 */
-  .bg-gradient-forest {
-    background: linear-gradient(135deg, #0D1F17 0%, #1A3A2F 50%, #2A5244 100%);
-  }
-  
-  /* 纸张纹理背景 */
-  .bg-paper {
-    background-color: #FAFAF7;
-    background-image: 
-      linear-gradient(90deg, rgba(26, 58, 47, 0.02) 1px, transparent 1px),
-      linear-gradient(rgba(26, 58, 47, 0.02) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-  
-  /* 装饰性引用标记 */
-  .quote-mark::before {
-    content: '"';
-    font-family: var(--font-serif);
-    font-size: 4rem;
-    color: var(--color-highlight);
-    opacity: 0.3;
-    position: absolute;
-    top: -1rem;
-    left: 0;
-  }
-  
-  /* 编号标签 */
-  .label-number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border: 2px solid var(--primary);
-    border-radius: 50%;
-    font-family: var(--font-serif);
-    font-weight: 600;
-    font-size: 0.875rem;
-  }
-  
-  /* 学术风格卡片 */
-  .card-academic {
-    background: var(--card);
-    border: 1px solid var(--border);
-    position: relative;
-    transition: all 0.3s ease;
-  }
-  
-  .card-academic::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 0;
-    background: var(--color-highlight);
-    transition: height 0.3s ease;
-  }
-  
-  .card-academic:hover::before {
-    height: 100%;
-  }
-  
-  .card-academic:hover {
-    border-color: var(--color-highlight);
-    box-shadow: 0 8px 30px rgba(26, 58, 47, 0.08);
-  }
-  
-  /* 按钮风格 */
-  .btn-primary {
-    background: var(--primary);
-    color: var(--primary-foreground);
-    border: 2px solid var(--primary);
-    transition: all 0.2s ease;
-  }
-  
-  .btn-primary:hover {
-    background: transparent;
-    color: var(--primary);
-  }
-  
-  .btn-secondary {
-    background: transparent;
-    color: var(--primary);
-    border: 2px solid var(--primary);
-    transition: all 0.2s ease;
-  }
-  
-  .btn-secondary:hover {
-    background: var(--primary);
-    color: var(--primary-foreground);
-  }
-  
-  /* 统计数字样式 */
-  .stat-number {
-    font-family: var(--font-serif);
-    font-weight: 700;
-    font-size: 3rem;
-    line-height: 1;
-    color: var(--primary);
-  }
-  
-  /* 流程步骤连接线 */
-  .step-connector {
-    position: relative;
-  }
-  
-  .step-connector::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: -2rem;
-    width: 2rem;
-    height: 2px;
-    background: linear-gradient(90deg, var(--color-highlight), transparent);
-  }
-}
-
-@layer utilities {
-  /* 精细的阴影 */
-  .shadow-academic {
-    box-shadow: 
-      0 1px 2px rgba(26, 58, 47, 0.04),
-      0 2px 4px rgba(26, 58, 47, 0.04),
-      0 4px 8px rgba(26, 58, 47, 0.04);
-  }
-  
-  .shadow-academic-lg {
-    box-shadow: 
-      0 2px 4px rgba(26, 58, 47, 0.04),
-      0 4px 8px rgba(26, 58, 47, 0.04),
-      0 8px 16px rgba(26, 58, 47, 0.04),
-      0 16px 32px rgba(26, 58, 47, 0.04);
-  }
-  
-  /* 纹理叠加 */
-  .texture-noise {
-    position: relative;
-  }
-  
-  .texture-noise::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.03;
-    pointer-events: none;
-  }
-}
-
-/* 动画 */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.1), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+body {
+  @apply font-sans;
 }
