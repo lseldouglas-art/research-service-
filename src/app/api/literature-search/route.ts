@@ -344,9 +344,63 @@ ${config?.fieldTitleAbsKey}("term1" OR "term2") ${config?.operators.not} ${confi
   },
 };
 
+// 主题词颗粒度配置
+const GRANULARITY_CONFIG = {
+  coarse: {
+    name: '粗颗粒度',
+    description: '单个关键词，检索范围广',
+    tip: '检索范围广，可能包含更多综述，适合初步探索领域。建议关注检索结果中的综述数量，如果过多可以考虑细化主题词。',
+  },
+  medium: {
+    name: '中等颗粒度',
+    description: '两个关键词组合，平衡范围与精度',
+    tip: '平衡检索范围与精度，综述数量通常适中。这是推荐的颗粒度选择。',
+  },
+  fine: {
+    name: '细颗粒度',
+    description: '三个或更多关键词，检索范围窄',
+    tip: '检索范围窄，综述数量可能较少。如果综述少于10篇，建议扩大到中等或粗颗粒度重新检索。',
+  },
+};
+
+// 根据颗粒度调整提示词
+function adjustPromptByGranularity(prompt: string, granularity: string, keyword: string): string {
+  const granularityConfig = GRANULARITY_CONFIG[granularity as keyof typeof GRANULARITY_CONFIG];
+  
+  let adjustmentNote = '';
+  
+  if (granularity === 'coarse') {
+    adjustmentNote = `
+【颗粒度说明】
+当前主题词"${keyword}"为粗颗粒度（单个关键词），检索范围较广。
+- 预期：综述论文数量可能较多（50篇以上）
+- 建议：如果综述过多，可以适当细化主题词重新检索
+- 注意：确保检索式能够覆盖该主题的各个方面，不要遗漏重要子领域
+`;
+  } else if (granularity === 'medium') {
+    adjustmentNote = `
+【颗粒度说明】
+当前主题词"${keyword}"为中等颗粒度（两个关键词组合），这是推荐的平衡选择。
+- 预期：综述论文数量通常在10-50篇之间
+- 建议：这是理想的综述数量范围，可直接进行分析
+- 注意：确保检索式准确反映两个概念的交叉领域
+`;
+  } else if (granularity === 'fine') {
+    adjustmentNote = `
+【颗粒度说明】
+当前主题词"${keyword}"为细颗粒度（三个或更多关键词），检索范围较窄。
+- 预期：综述论文数量可能较少（10篇以下）
+- 建议：如果综述过少，建议扩大主题词范围（减少关键词数量）
+- 注意：精确检索可能导致综述不足，需要权衡精确度与覆盖面
+`;
+  }
+  
+  return prompt + adjustmentNote;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { keyword, database, template, model } = await request.json();
+    const { keyword, database, template, model, granularity } = await request.json();
     
     if (!keyword) {
       return NextResponse.json({ error: '请输入研究领域或关键词' }, { status: 400 });
@@ -362,7 +416,12 @@ export async function POST(request: NextRequest) {
 
     // 选择提示词模板
     const templateConfig = PROMPT_TEMPLATES[template as keyof typeof PROMPT_TEMPLATES] || PROMPT_TEMPLATES.stable;
-    const prompt = templateConfig.generatePrompt(keyword, database);
+    let prompt = templateConfig.generatePrompt(keyword, database);
+    
+    // 根据颗粒度调整提示词
+    if (granularity) {
+      prompt = adjustPromptByGranularity(prompt, granularity, keyword);
+    }
 
     // 选择AI模型
     const selectedModel = model || 'doubao-seed-1-8-251228';

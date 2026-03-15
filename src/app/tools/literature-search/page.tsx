@@ -31,7 +31,18 @@ import {
   X,
   Lightbulb,
   Target,
-  Layers
+  Layers,
+  ArrowRight,
+  TrendingUp,
+  FileSearch,
+  BarChart3,
+  CheckCircle2,
+  AlertTriangle,
+  CircleAlert,
+  Rocket,
+  BookMarked,
+  Scale,
+  HelpCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -54,6 +65,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
 interface Database {
   id: string;
@@ -84,15 +96,85 @@ interface HistoryItem {
   database: string;
   template: string;
   model: string;
+  granularity: string;
   result: string;
   timestamp: string;
 }
+
+// 主题词颗粒度配置
+const GRANULARITY_CONFIG = {
+  coarse: {
+    id: 'coarse',
+    name: '粗颗粒度',
+    description: '单个关键词，如"电池"',
+    example: '电池、人工智能、机器学习',
+    keywords: 1,
+    tip: '检索范围广，综述数量可能较多，适合初步探索领域',
+  },
+  medium: {
+    id: 'medium',
+    name: '中等颗粒度',
+    description: '两个关键词组合，如"锌离子电池"',
+    example: '锌离子电池、医疗人工智能、教育机器学习',
+    keywords: 2,
+    tip: '平衡检索范围与精度，综述数量适中，适合大多数场景',
+  },
+  fine: {
+    id: 'fine',
+    name: '细颗粒度',
+    description: '三个或更多关键词，如"锌离子电池电解质"',
+    example: '锌离子电池电解质、医疗人工智能诊断、教育机器学习个性化',
+    keywords: 3,
+    tip: '检索范围窄，综述数量可能较少，适合精细化研究方向',
+  },
+};
+
+// 综述数量评估策略
+const REVIEW_STRATEGY = {
+  'abundant': {
+    range: '50篇以上',
+    status: 'excellent',
+    title: '综述积累充分',
+    description: '该领域已有充分的综述积累，可以直接进行AI分析',
+    action: '进入下一步：将综述输入AI分析',
+    nextStep: 'ai-analysis',
+    color: 'green',
+  },
+  'moderate': {
+    range: '10-50篇',
+    status: 'good',
+    title: '综述数量适中',
+    description: '理想数量范围，可选择仅用综述或加入研究型论文',
+    action: '建议：可选择进入AI分析或加入研究型论文丰富材料',
+    nextStep: 'flexible',
+    color: 'blue',
+  },
+  'limited': {
+    range: '约10篇',
+    status: 'caution',
+    title: '综述相对较少',
+    description: '建议将研究型论文也加入分析，丰富信息来源',
+    action: '建议：筛选综述+研究型论文一起分析',
+    nextStep: 'extended-analysis',
+    color: 'yellow',
+  },
+  'scarce': {
+    range: '几篇',
+    status: 'warning',
+    title: '综述数量不足',
+    description: '主题颗粒度可能过细，或该细分领域缺乏综述',
+    action: '建议：扩大检索范围或进入新兴领域专项流程',
+    nextStep: 'adjust-or-special',
+    color: 'orange',
+  },
+};
 
 export default function LiteratureSearchPage() {
   const [keyword, setKeyword] = useState('');
   const [database, setDatabase] = useState('scopus');
   const [template, setTemplate] = useState('stable');
   const [model, setModel] = useState('doubao-seed-1-8-251228');
+  const [granularity, setGranularity] = useState('medium');
   const [databases, setDatabases] = useState<Database[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [models, setModels] = useState<AIModel[]>([]);
@@ -102,6 +184,13 @@ export default function LiteratureSearchPage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [guideStep, setGuideStep] = useState(0);
+  
+  // 检索结果评估状态
+  const [reviewCount, setReviewCount] = useState<number | ''>('');
+  const [relevanceScore, setRelevanceScore] = useState<number>(50);
+  const [showEvaluation, setShowEvaluation] = useState(false);
+  
   const resultRef = useRef<HTMLDivElement>(null);
 
   // 加载配置
@@ -160,7 +249,7 @@ export default function LiteratureSearchPage() {
       const response = await fetch('/api/literature-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword, database, template, model }),
+        body: JSON.stringify({ keyword, database, template, model, granularity }),
       });
 
       if (!response.ok) {
@@ -193,8 +282,10 @@ export default function LiteratureSearchPage() {
                     database,
                     template,
                     model,
+                    granularity,
                     result: fullResult,
                   });
+                  setShowEvaluation(true); // 生成后显示评估区域
                 }
               } catch {
                 // 忽略解析错误
@@ -222,6 +313,15 @@ export default function LiteratureSearchPage() {
     }
   };
 
+  // 根据综述数量获取策略
+  const getReviewStrategy = () => {
+    const count = Number(reviewCount);
+    if (count >= 50) return REVIEW_STRATEGY.abundant;
+    if (count >= 10) return REVIEW_STRATEGY.moderate;
+    if (count >= 5) return REVIEW_STRATEGY.limited;
+    return REVIEW_STRATEGY.scarce;
+  };
+
   // 按语言分组数据库
   const groupedDatabases = databases.reduce((acc, db) => {
     const lang = db.language === 'zh' ? '中文数据库' : '英文数据库';
@@ -240,73 +340,192 @@ export default function LiteratureSearchPage() {
   const selectedDb = databases.find(d => d.id === database);
   const selectedTemplate = templates.find(t => t.id === template);
   const selectedModel = models.find(m => m.id === model);
+  const selectedGranularity = GRANULARITY_CONFIG[granularity as keyof typeof GRANULARITY_CONFIG];
+
+  // 用户指南步骤配置
+  const guideSteps = [
+    {
+      title: '核心流程概览',
+      icon: <Target className="w-6 h-6 text-blue-500" />,
+      content: (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {[
+              { step: 1, title: '输入关键词', desc: '输入想写综述的领域', icon: <FileText className="w-5 h-5" /> },
+              { step: 2, title: '生成检索式', desc: 'AI自动生成专业检索式', icon: <Sparkles className="w-5 h-5" /> },
+              { step: 3, title: '检索论文', desc: '在数据库中检索论文', icon: <Search className="w-5 h-5" /> },
+              { step: 4, title: 'AI分析综述', desc: '筛选综述输入AI分析', icon: <BarChart3 className="w-5 h-5" /> },
+            ].map((item) => (
+              <div key={item.step} className="flex flex-col items-center text-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mb-2">
+                  {item.step}
+                </div>
+                <div className="text-blue-500 mb-1">{item.icon}</div>
+                <p className="font-medium text-sm">{item.title}</p>
+                <p className="text-xs text-slate-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <p className="text-sm text-yellow-800 dark:text-yellow-300">
+              <strong>💡 关键步骤：</strong>第四步是核心！从检索结果中筛选综述论文，输入AI分析，获得选题方向建议。
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: '主题词颗粒度',
+      icon: <Layers className="w-6 h-6 text-purple-500" />,
+      content: (
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            主题词颗粒度直接影响：AI生成效果、检索文献总数、综述论文数量
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {Object.values(GRANULARITY_CONFIG).map((g) => (
+              <div key={g.id} className={`p-4 rounded-lg border-2 ${g.id === 'medium' ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30' : 'border-slate-200 dark:border-slate-700'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant={g.id === 'medium' ? 'default' : 'outline'}>{g.name}</Badge>
+                  {g.id === 'medium' && <Badge className="bg-purple-500">推荐</Badge>}
+                </div>
+                <p className="text-sm font-medium mb-1">{g.description}</p>
+                <p className="text-xs text-slate-500 mb-2">示例：{g.example}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{g.tip}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: '综述数量应对策略',
+      icon: <BookMarked className="w-6 h-6 text-green-500" />,
+      content: (
+        <div className="space-y-3">
+          {Object.values(REVIEW_STRATEGY).map((s) => (
+            <div key={s.range} className={`p-3 rounded-lg border-l-4 ${
+              s.color === 'green' ? 'border-green-500 bg-green-50 dark:bg-green-950/30' :
+              s.color === 'blue' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' :
+              s.color === 'yellow' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30' :
+              'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
+            }`}>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-bold text-sm">{s.range}</span>
+                <span className={`text-xs px-2 py-0.5 rounded ${
+                  s.color === 'green' ? 'bg-green-200 text-green-800' :
+                  s.color === 'blue' ? 'bg-blue-200 text-blue-800' :
+                  s.color === 'yellow' ? 'bg-yellow-200 text-yellow-800' :
+                  'bg-orange-200 text-orange-800'
+                }`}>{s.title}</span>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{s.description}</p>
+              <p className="text-xs font-medium">{s.action}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: '相关度评估方法',
+      icon: <Scale className="w-6 h-6 text-orange-500" />,
+      content: (
+        <div className="space-y-4">
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+            <p className="font-medium mb-2">快速判断方法：</p>
+            <ol className="list-decimal list-inside space-y-1 text-sm text-slate-600 dark:text-slate-400">
+              <li>按时间倒序选取10篇文献标题</li>
+              <li>快速浏览标题与选题的相关性</li>
+              <li>计算相关度 = 相关篇数 / 10</li>
+            </ol>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg text-center">
+              <p className="text-2xl font-bold text-green-600">≥60%</p>
+              <p className="text-xs text-slate-600">相关度良好，可直接进行</p>
+            </div>
+            <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg text-center">
+              <p className="text-2xl font-bold text-yellow-600">50-60%</p>
+              <p className="text-xs text-slate-600">可接受范围，继续流程</p>
+            </div>
+          </div>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              <strong>💡 提示：</strong>初步检索不追求100%相关度，50-60%即可进入下一步。完成比完美更重要！
+            </p>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* 模式介绍弹窗 */}
+      {/* 完整用户指南弹窗 */}
       <Dialog open={showGuide} onOpenChange={setShowGuide}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <Lightbulb className="w-6 h-6 text-yellow-500" />
-              选择适合您的检索模式
+              <BookOpen className="w-6 h-6 text-blue-500" />
+              文献检索完整指南
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
-              三种检索策略模板，满足不同需求场景
+              掌握高效文献检索的核心方法与策略
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 mt-4">
-            {templates.map((t, index) => (
-              <Card key={t.id} className={`overflow-hidden ${t.id === 'stable' ? 'border-2 border-blue-500' : ''}`}>
-                <div className={`h-1 ${
-                  t.id === 'stable' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
-                  t.id === 'advanced' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
-                  'bg-gradient-to-r from-orange-500 to-red-500'
-                }`} />
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {t.id === 'stable' && <Zap className="w-5 h-5 text-blue-500" />}
-                      {t.id === 'advanced' && <Layers className="w-5 h-5 text-purple-500" />}
-                      {t.id === 'comprehensive' && <Target className="w-5 h-5 text-orange-500" />}
-                      <h3 className="font-semibold text-lg">{t.name}</h3>
-                      {t.id === 'stable' && (
-                        <Badge className="bg-blue-500 text-white text-xs">推荐新手</Badge>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
-                    {t.description}
-                  </p>
-                  <div className="space-y-2 mb-3">
-                    <p className="text-xs font-medium text-slate-500">核心特点：</p>
-                    <div className="flex flex-wrap gap-2">
-                      {t.features.map((f, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">{f}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
-                    <p className="text-xs text-slate-500">
-                      <span className="font-medium">适合场景：</span>{t.bestFor}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* 进度指示器 */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            {guideSteps.map((_, index) => (
+              <div key={index} className="flex-1 flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                  index <= guideStep 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                }`}>
+                  {index + 1}
+                </div>
+                {index < guideSteps.length - 1 && (
+                  <div className={`flex-1 h-1 mx-2 rounded transition-colors ${
+                    index < guideStep ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700'
+                  }`} />
+                )}
+              </div>
             ))}
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
-              <strong>💡 建议：</strong>首次使用推荐选择「稳定版」，结果稳定可靠。如需更全面的检索或跨学科研究，可尝试「高级版」。如需中英文文献全覆盖，请选择「全覆盖版」。
-            </p>
+          {/* 内容区域 */}
+          <div className="flex-1 overflow-y-auto py-4">
+            <div className="flex items-center gap-3 mb-4">
+              {guideSteps[guideStep].icon}
+              <h3 className="text-lg font-semibold">{guideSteps[guideStep].title}</h3>
+            </div>
+            {guideSteps[guideStep].content}
           </div>
 
-          <div className="flex justify-end mt-4">
-            <Button onClick={closeGuide} className="bg-gradient-to-r from-blue-600 to-purple-600">
-              开始使用
+          {/* 底部按钮 */}
+          <div className="flex justify-between items-center pt-4 border-t">
+            <Button 
+              variant="ghost" 
+              onClick={() => setGuideStep(Math.max(0, guideStep - 1))}
+              disabled={guideStep === 0}
+            >
+              上一步
             </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={closeGuide}>
+                跳过指南
+              </Button>
+              {guideStep < guideSteps.length - 1 ? (
+                <Button onClick={() => setGuideStep(guideStep + 1)}>
+                  下一步
+                </Button>
+              ) : (
+                <Button onClick={closeGuide} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                  开始使用
+                </Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -322,8 +541,11 @@ export default function LiteratureSearchPage() {
               </Link>
             </Button>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setShowGuide(true)}>
-                <Info className="mr-1 h-4 w-4" />
+              <Button variant="ghost" size="sm" onClick={() => {
+                setGuideStep(0);
+                setShowGuide(true);
+              }}>
+                <HelpCircle className="mr-1 h-4 w-4" />
                 使用指南
               </Button>
               <Badge variant="outline" className="text-sm">
@@ -377,6 +599,37 @@ export default function LiteratureSearchPage() {
                     <p className="text-xs text-slate-500">
                       输入您的综述研究方向或核心关键词
                     </p>
+                  </div>
+
+                  {/* Granularity Selection */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-purple-500" />
+                      主题词颗粒度
+                    </Label>
+                    <Select value={granularity} onValueChange={setGranularity}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择颗粒度" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(GRANULARITY_CONFIG).map((g) => (
+                          <SelectItem key={g.id} value={g.id}>
+                            <div className="flex items-center gap-2">
+                              <span>{g.name}</span>
+                              {g.id === 'medium' && (
+                                <Badge className="bg-purple-500 text-white text-[10px] py-0">推荐</Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedGranularity && (
+                      <div className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-800 p-2 rounded">
+                        <p className="font-medium mb-1">{selectedGranularity.description}</p>
+                        <p className="text-slate-400">{selectedGranularity.tip}</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Database Selection */}
@@ -512,11 +765,11 @@ export default function LiteratureSearchPage() {
                       </Button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="text-xs text-slate-500 space-y-1 pt-2">
+                      <p>• <strong>颗粒度</strong>：粗颗粒度范围广，细颗粒度精度高</p>
                       <p>• <strong>稳定版</strong>：结果稳定，适合常规检索</p>
                       <p>• <strong>高级版</strong>：同义词扩展更全面，适合跨学科</p>
                       <p>• <strong>全覆盖版</strong>：同时生成多数据库检索式</p>
-                      <p>• 可多次生成，选择最优结果</p>
-                      <p>• 不同模型生成结果可能略有差异</p>
+                      <p>• 完成比完美更重要，先走完流程再优化</p>
                     </CollapsibleContent>
                   </Collapsible>
                 </CardContent>
@@ -526,7 +779,7 @@ export default function LiteratureSearchPage() {
             {/* Right Panel - Result */}
             <div className="lg:col-span-2 space-y-4">
               {/* Result Card */}
-              <Card className="min-h-[400px]">
+              <Card className="min-h-[300px]">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Globe className="w-5 h-5" />
@@ -556,7 +809,7 @@ export default function LiteratureSearchPage() {
                 </CardHeader>
                 <CardContent>
                   {!result && !isGenerating ? (
-                    <div className="h-[300px] flex flex-col items-center justify-center text-slate-400">
+                    <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
                       <Search className="w-16 h-16 mb-4 opacity-50" />
                       <p>输入研究领域，点击生成检索式</p>
                       <p className="text-sm mt-2">支持中英文全学科覆盖</p>
@@ -566,7 +819,7 @@ export default function LiteratureSearchPage() {
                       ref={resultRef}
                       className="prose prose-sm dark:prose-invert max-w-none"
                     >
-                      <pre className="whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-sm font-mono overflow-auto max-h-[500px]">
+                      <pre className="whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-sm font-mono overflow-auto max-h-[400px]">
                         {result}
                         {isGenerating && (
                           <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />
@@ -576,6 +829,159 @@ export default function LiteratureSearchPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* 检索结果评估区域 */}
+              {showEvaluation && result && !isGenerating && (
+                <Card className="border-2 border-blue-200 dark:border-blue-800">
+                  <CardHeader className="bg-blue-50 dark:bg-blue-950/30">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-500" />
+                      检索结果评估
+                    </CardTitle>
+                    <CardDescription>
+                      完成数据库检索后，在此记录结果以获得下一步建议
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4 space-y-4">
+                    {/* 综述数量输入 */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <BookMarked className="w-4 h-4 text-purple-500" />
+                        检索结果中的综述论文数量
+                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="number"
+                          placeholder="输入数量"
+                          value={reviewCount}
+                          onChange={(e) => setReviewCount(e.target.value ? parseInt(e.target.value) : '')}
+                          className="w-32"
+                        />
+                        <span className="text-sm text-slate-500">篇</span>
+                      </div>
+                    </div>
+
+                    {/* 相关度评估 */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Scale className="w-4 h-4 text-orange-500" />
+                        相关度评估
+                        <Badge variant="outline" className="text-xs">
+                          建议 ≥50%
+                        </Badge>
+                      </Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-500">低相关度</span>
+                          <span className="font-medium">{relevanceScore}%</span>
+                          <span className="text-slate-500">高相关度</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={relevanceScore}
+                          onChange={(e) => setRelevanceScore(parseInt(e.target.value))}
+                          className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <p className="text-xs text-slate-500">
+                          方法：按时间倒序取10篇文献标题，统计与选题相关的篇数
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 策略建议 */}
+                    {reviewCount !== '' && (
+                      <div className={`p-4 rounded-lg border-l-4 ${
+                        getReviewStrategy().color === 'green' ? 'border-green-500 bg-green-50 dark:bg-green-950/30' :
+                        getReviewStrategy().color === 'blue' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' :
+                        getReviewStrategy().color === 'yellow' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30' :
+                        'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
+                      }`}>
+                        <div className="flex items-start gap-3">
+                          {getReviewStrategy().color === 'green' ? <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" /> :
+                           getReviewStrategy().color === 'blue' ? <TrendingUp className="w-5 h-5 text-blue-500 mt-0.5" /> :
+                           getReviewStrategy().color === 'yellow' ? <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5" /> :
+                           <CircleAlert className="w-5 h-5 text-orange-500 mt-0.5" />}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-bold">{getReviewStrategy().range}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded ${
+                                getReviewStrategy().color === 'green' ? 'bg-green-200 text-green-800' :
+                                getReviewStrategy().color === 'blue' ? 'bg-blue-200 text-blue-800' :
+                                getReviewStrategy().color === 'yellow' ? 'bg-yellow-200 text-yellow-800' :
+                                'bg-orange-200 text-orange-800'
+                              }`}>{getReviewStrategy().title}</span>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                              {getReviewStrategy().description}
+                            </p>
+                            <p className="text-sm font-medium">{getReviewStrategy().action}</p>
+                            
+                            {/* 操作按钮 */}
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {getReviewStrategy().nextStep === 'ai-analysis' && (
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                  <Rocket className="mr-1 h-4 w-4" />
+                                  进入AI分析
+                                </Button>
+                              )}
+                              {getReviewStrategy().nextStep === 'flexible' && (
+                                <>
+                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                                    <Rocket className="mr-1 h-4 w-4" />
+                                    仅用综述分析
+                                  </Button>
+                                  <Button size="sm" variant="outline">
+                                    <FileSearch className="mr-1 h-4 w-4" />
+                                    加入研究型论文
+                                  </Button>
+                                </>
+                              )}
+                              {getReviewStrategy().nextStep === 'extended-analysis' && (
+                                <Button size="sm" className="bg-yellow-600 hover:bg-yellow-700">
+                                  <FileSearch className="mr-1 h-4 w-4" />
+                                  综述+研究论文分析
+                                </Button>
+                              )}
+                              {getReviewStrategy().nextStep === 'adjust-or-special' && (
+                                <>
+                                  <Button size="sm" variant="outline" onClick={() => {
+                                    const currentGranularity = granularity;
+                                    if (currentGranularity === 'fine') {
+                                      setGranularity('medium');
+                                    } else if (currentGranularity === 'medium') {
+                                      setGranularity('coarse');
+                                    }
+                                    alert('已调整颗粒度，请重新生成检索式');
+                                  }}>
+                                    <RefreshCw className="mr-1 h-4 w-4" />
+                                    调整颗粒度重试
+                                  </Button>
+                                  <Button size="sm" variant="outline">
+                                    <ArrowRight className="mr-1 h-4 w-4" />
+                                    新兴领域专项流程
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 相关度警告 */}
+                    {relevanceScore < 50 && reviewCount !== '' && (
+                      <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                          <AlertTriangle className="w-4 h-4 inline mr-1" />
+                          相关度低于50%，建议调整检索式或检查关键词是否准确
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Quick Actions */}
               {result && !isGenerating && (
@@ -627,6 +1033,7 @@ export default function LiteratureSearchPage() {
                             setDatabase(item.database);
                             setTemplate(item.template);
                             setModel(item.model || 'doubao-seed-1-8-251228');
+                            setGranularity(item.granularity || 'medium');
                             setResult(item.result);
                             setShowHistory(false);
                           }}
@@ -642,6 +1049,11 @@ export default function LiteratureSearchPage() {
                             <Badge variant="outline" className="text-xs">
                               {templates.find(t => t.id === item.template)?.name}
                             </Badge>
+                            {item.granularity && (
+                              <Badge variant="outline" className="text-xs">
+                                {GRANULARITY_CONFIG[item.granularity as keyof typeof GRANULARITY_CONFIG]?.name}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       ))}
