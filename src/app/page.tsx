@@ -2,79 +2,91 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  BookOpen, 
-  Brain, 
-  FileText, 
-  Layers, 
-  Sparkles, 
-  Target,
-  Search,
-  Database,
-  PenTool,
-  CheckCircle2,
+  Sparkles,
+  GraduationCap,
+  FileText,
+  Workflow,
   ArrowRight,
-  Zap,
-  Workflow
+  CheckCircle2,
+  Users,
+  Clock,
+  Target,
+  BookOpen,
+  PenTool,
+  Search,
+  Layers
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
-  const tools = [
+  const coreServices = [
     {
       icon: FileText,
-      title: '论文分割器',
-      description: '用于批量处理文献，将上百篇文献分割成AI可处理的小文件',
-    },
-    {
-      icon: Layers,
-      title: 'BibTeX 标签同步器',
-      description: '将AI分析的章节分类结果，自动同步到Zotero文献库中',
-    },
-    {
-      icon: Search,
-      title: '章节筛选器',
-      description: '在撰写特定章节时，快速筛选出所有相关文献',
-    },
-    {
-      icon: PenTool,
-      title: '引用编号补全器',
-      description: '根据段落大纲，精准提取写作所需的具体文献信息',
-    },
-  ];
-
-  const phases = [
-    {
-      number: '01',
-      title: '智能定向与文献基石构建',
-      subtitle: '第2-5集',
-      description: '从一个宽泛的想法出发，通过AI辅助，精准定位到一个具有创新性和可行性的具体综述选题，并为其建立一个高质量、高相关的核心文献库。',
-      steps: ['构建初步检索策略', '获取初步文献数据', '智能分析与选题决策', '精准文献重检索'],
+      title: '科研辅助服务',
+      subtitle: '专业文献处理与写作支持',
+      description: '基于工业化工作流，提供文献检索、大纲构建、论文写作、质量精修等全流程科研辅助服务',
+      features: ['文献精准检索', '智能大纲构建', '段落精修润色', '参考文献管理'],
+      link: '/services',
       color: 'from-blue-500 to-cyan-500',
     },
     {
-      number: '02',
-      title: '结构化大纲构建与素材整理',
-      subtitle: '第6-7集',
-      description: '将无序的文献库信息，转化为一个逻辑严密、章节分明、且每个章节都有充足文献支撑的写作蓝图。',
-      steps: ['数据驱动的综述大纲', '文献智能分类与结构化管理'],
+      icon: GraduationCap,
+      title: '科研培训服务',
+      subtitle: '高质量学术写作训练营',
+      description: '系统化的AI辅助学术写作培训，帮助研究者掌握人机协同的高效工作方法',
+      features: ['系统化课程体系', '实战案例教学', '私域社群支持', '持续答疑指导'],
+      link: '/training',
       color: 'from-purple-500 to-pink-500',
     },
     {
-      number: '03',
-      title: 'AI辅助写作与质量精修',
-      subtitle: '第8-13集',
-      description: '在AI的辅助下，完成论文初稿，并通过系统化的流程进行事实核查、语言润色和原创性重写，最终产出高质量的文稿。',
-      steps: ['分章节智能写作', '段落精修与事实核查', '引言、结论与摘要构建', '降低AIGC率与原创性重塑'],
+      icon: Workflow,
+      title: '一体化解决方案',
+      subtitle: '定制化科研服务组合',
+      description: '根据您的具体需求，灵活组合各项服务，提供从选题到发表的一站式科研支持',
+      features: ['需求深度分析', '定制服务方案', '全流程跟踪', '质量保障体系'],
+      link: '/solutions',
       color: 'from-orange-500 to-red-500',
     },
+  ];
+
+  const workflowSteps = [
     {
-      number: '04',
-      title: '收尾工作与格式规范',
-      subtitle: '第12、15、16集',
-      description: '完成论文的配图、参考文献格式化等所有收尾工作，准备最终提交。',
-      steps: ['论文配图策略与获取', '参考文献的插入与管理'],
-      color: 'from-green-500 to-teal-500',
+      step: '01',
+      title: '选题定向',
+      description: '智能分析研究领域，精准定位创新选题',
     },
+    {
+      step: '02',
+      title: '文献构建',
+      description: '系统化文献检索，构建高质量文献库',
+    },
+    {
+      step: '03',
+      title: '大纲设计',
+      description: '数据驱动大纲，逻辑严密结构清晰',
+    },
+    {
+      step: '04',
+      title: '智能写作',
+      description: 'AI辅助写作，提升效率保证质量',
+    },
+    {
+      step: '05',
+      title: '质量精修',
+      description: '事实核查润色，降低AIGC率',
+    },
+    {
+      step: '06',
+      title: '格式规范',
+      description: '配图排版引用，准备最终提交',
+    },
+  ];
+
+  const stats = [
+    { number: '500+', label: '服务用户' },
+    { number: '1000+', label: '论文辅助' },
+    { number: '98%', label: '满意度' },
+    { number: '24h', label: '响应时间' },
   ];
 
   return (
@@ -88,31 +100,30 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <Badge variant="outline" className="mb-6 px-4 py-2 text-sm border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950">
               <Sparkles className="w-4 h-4 mr-2" />
-              AI辅助学术写作训练营
+              复合型一体化科研服务平台
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-              建立人机高效协同的
+              专业科研辅助服务
               <br />
-              工业化工作流
+              助力学术创新突破
             </h1>
             
             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto leading-relaxed">
-              我们不追求让AI替代思考，而是将AI作为一名强大的科研助理，
-              把研究者从繁琐、重复的机械性工作中解放出来，
-              从而能更专注于学术思想的创新、逻辑框架的构建和最终成果的把控。
+              基于人机协同的工业化工作流，将AI作为强大的科研助理，
+              提供从选题到发表的全流程科研支持服务
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                <Link href="/phases">
-                  开始学习
+                <Link href="/services">
+                  了解服务内容
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="#tools">
-                  了解工具箱
+                <Link href="/workflow">
+                  查看服务流程
                 </Link>
               </Button>
             </div>
@@ -120,82 +131,63 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Philosophy Section */}
-      <section className="py-20 bg-white dark:bg-slate-900">
+      {/* Stats Section */}
+      <section className="py-12 bg-white dark:bg-slate-900 border-y">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <Badge variant="secondary" className="mb-4">核心理念</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">课程设计哲学</h2>
-              <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                这个大纲请学员完成作业时时刻对照着看，了解每个步骤的目的以及是要为下个步骤准备什么材料，避免失去焦点！
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900">
-                <CardHeader>
-                  <Brain className="w-12 h-12 text-blue-600 mb-4" />
-                  <CardTitle>AI作为科研助理</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    不替代思考，而是作为强大的助手，处理繁琐重复的机械性工作
-                  </CardDescription>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950 dark:to-slate-900">
-                <CardHeader>
-                  <Target className="w-12 h-12 text-purple-600 mb-4" />
-                  <CardTitle>聚焦核心价值</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    解放研究者，专注于学术思想创新、逻辑框架构建和成果把控
-                  </CardDescription>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-2 border-pink-200 dark:border-pink-800 bg-gradient-to-br from-pink-50 to-white dark:from-pink-950 dark:to-slate-900">
-                <CardHeader>
-                  <Workflow className="w-12 h-12 text-pink-600 mb-4" />
-                  <CardTitle>工业化工作流</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    建立标准化、可重复、高效的科研工作流程，提升整体产出质量
-                  </CardDescription>
-                </CardContent>
-              </Card>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Tools Section */}
-      <section id="tools" className="py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+      {/* Core Services Section */}
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <Badge variant="secondary" className="mb-4">核心工具</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">论文处理工具箱</h2>
+              <Badge variant="secondary" className="mb-4">核心服务</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">三大核心服务模块</h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                四大核心功能，贯穿整个课程流程，实现高效自动化
+                基于成熟的训练营知识框架，灵活提供高质量科研支持服务
               </p>
             </div>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {tools.map((tool, index) => (
-                <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                  <CardHeader>
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <tool.icon className="w-7 h-7 text-white" />
+            <div className="grid md:grid-cols-3 gap-6">
+              {coreServices.map((service, index) => (
+                <Card key={index} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden">
+                  <div className={`h-2 bg-gradient-to-r ${service.color}`} />
+                  <CardHeader className="pb-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <service.icon className="w-7 h-7 text-white" />
                     </div>
-                    <CardTitle className="text-lg">{tool.title}</CardTitle>
+                    <CardTitle className="text-xl">{service.title}</CardTitle>
+                    <CardDescription className="text-sm font-medium">{service.subtitle}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">{tool.description}</CardDescription>
+                  <CardContent className="space-y-4">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm">{service.description}</p>
+                    <div className="space-y-2">
+                      {service.features.map((feature, fIndex) => (
+                        <div key={fIndex} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                          <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                    <Button asChild variant="outline" className="w-full mt-4 group-hover:bg-slate-100 dark:group-hover:bg-slate-800">
+                      <Link href={service.link}>
+                        了解详情
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -204,49 +196,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Phases Overview */}
-      <section className="py-20 bg-white dark:bg-slate-900">
+      {/* Workflow Section */}
+      <section className="py-20 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <Badge variant="secondary" className="mb-4">课程阶段</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">四大核心阶段</h2>
+              <Badge variant="secondary" className="mb-4">服务流程</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">六步完成高质量论文</h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                从选题到定稿，系统化的学术写作全流程
+                基于训练营验证的高效工作流，每一步都有专业支持
               </p>
             </div>
             
-            <div className="space-y-6">
-              {phases.map((phase, index) => (
-                <Card key={index} className="overflow-hidden hover:shadow-xl transition-all duration-300">
-                  <div className="flex flex-col lg:flex-row">
-                    <div className={`w-full lg:w-48 bg-gradient-to-br ${phase.color} p-6 text-white flex flex-col justify-center`}>
-                      <div className="text-5xl font-bold mb-2">{phase.number}</div>
-                      <Badge variant="secondary" className="w-fit bg-white/20 hover:bg-white/30 text-white border-0">
-                        {phase.subtitle}
-                      </Badge>
-                    </div>
-                    <div className="flex-1 p-6">
-                      <h3 className="text-xl font-bold mb-3">{phase.title}</h3>
-                      <p className="text-slate-600 dark:text-slate-400 mb-4">{phase.description}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {phase.steps.map((step, stepIndex) => (
-                          <Badge key={stepIndex} variant="outline" className="border-slate-300 dark:border-slate-600">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            {step}
-                          </Badge>
-                        ))}
+            <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {workflowSteps.map((item, index) => (
+                <div key={index} className="relative group">
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-4xl font-bold text-slate-200 dark:text-slate-700 mb-3">
+                        {item.step}
                       </div>
+                      <h3 className="font-semibold mb-2">{item.title}</h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">{item.description}</p>
+                    </CardContent>
+                  </Card>
+                  {index < workflowSteps.length - 1 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 text-slate-300 dark:text-slate-600 z-10">
+                      <ArrowRight className="w-4 h-4" />
                     </div>
-                  </div>
-                </Card>
+                  )}
+                </div>
               ))}
             </div>
             
             <div className="mt-12 text-center">
               <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                <Link href="/phases">
-                  查看详细课程内容
+                <Link href="/workflow">
+                  查看完整服务流程
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
               </Button>
@@ -255,27 +241,82 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Update Notice */}
-      <section className="py-16 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+      {/* Why Choose Us */}
+      <section className="py-20 bg-white dark:bg-slate-900">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-amber-200 dark:border-amber-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Zap className="w-6 h-6 text-amber-600" />
-                  <CardTitle>重大流程更新与勘误说明</CardTitle>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <Badge variant="secondary" className="mb-4">为什么选择我们</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">专业、高效、可靠</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="text-center p-6">
+                <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-blue-600" />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-slate-600 dark:text-slate-400 font-medium">
-                  关于文献打标签 (第7、8集内容升级)
+                <h3 className="font-semibold mb-2">精准定位</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  AI辅助智能分析，精准把握研究方向
                 </p>
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 space-y-2">
-                  <p className="text-sm"><strong>旧流程：</strong>第7集演示了如何手动为Zotero中的文献添加章节标签；第8集早期版本使用在线工具为文献添加REXXX编号标签。</p>
-                  <p className="text-sm"><strong>新流程：</strong>这两个手动步骤现已完全整合并自动化！现在使用《论文处理工具箱》中的"BibTeX 标签同步器"，可以一次性将章节号标签和论文唯一REXXX编号同时、自动地写入文献信息中。</p>
+              </Card>
+              
+              <Card className="text-center p-6">
+                <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-purple-600" />
                 </div>
-              </CardContent>
-            </Card>
+                <h3 className="font-semibold mb-2">高效交付</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  工业化工作流，大幅提升科研效率
+                </p>
+              </Card>
+              
+              <Card className="text-center p-6">
+                <div className="w-16 h-16 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-pink-600" />
+                </div>
+                <h3 className="font-semibold mb-2">专业团队</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  资深科研背景团队，理解学术需求
+                </p>
+              </Card>
+              
+              <Card className="text-center p-6">
+                <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-8 h-8 text-orange-600" />
+                </div>
+                <h3 className="font-semibold mb-2">持续支持</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  完善的售后保障，全程跟踪服务
+                </p>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              准备好开始您的科研之旅了吗？
+            </h2>
+            <p className="text-lg text-white/80 mb-8">
+              立即联系我们，获取专属科研服务方案
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg" variant="secondary" className="bg-white text-slate-900 hover:bg-slate-100">
+                <Link href="/contact">
+                  联系咨询
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                <Link href="/training">
+                  参加培训
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -283,10 +324,40 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-12 bg-slate-900 dark:bg-slate-950 text-slate-400">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto text-center">
-            <BookOpen className="w-8 h-8 mx-auto mb-4 text-blue-500" />
-            <p className="text-lg font-semibold text-white mb-2">AI辅助学术写作训练营</p>
-            <p className="text-sm">建立人机高效协同的工业化工作流</p>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-4 gap-8 mb-8">
+              <div className="md:col-span-2">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-6 h-6 text-blue-500" />
+                  <span className="text-lg font-semibold text-white">科研服务站</span>
+                </div>
+                <p className="text-sm mb-4">
+                  基于人机协同的工业化工作流，提供专业、高效、可靠的科研辅助服务
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-white mb-4">核心服务</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link href="/services" className="hover:text-white transition-colors">科研辅助服务</Link></li>
+                  <li><Link href="/training" className="hover:text-white transition-colors">科研培训服务</Link></li>
+                  <li><Link href="/solutions" className="hover:text-white transition-colors">一体化解决方案</Link></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-white mb-4">了解更多</h4>
+                <ul className="space-y-2 text-sm">
+                  <li><Link href="/workflow" className="hover:text-white transition-colors">服务流程</Link></li>
+                  <li><Link href="/cases" className="hover:text-white transition-colors">成功案例</Link></li>
+                  <li><Link href="/contact" className="hover:text-white transition-colors">联系我们</Link></li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="border-t border-slate-800 pt-8 text-center text-sm">
+              <p>专业科研辅助服务平台 | 助力学术创新突破</p>
+            </div>
           </div>
         </div>
       </footer>
