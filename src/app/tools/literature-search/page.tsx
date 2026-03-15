@@ -25,7 +25,13 @@ import {
   History,
   AlertCircle,
   ChevronDown,
-  Languages
+  Languages,
+  Bot,
+  Info,
+  X,
+  Lightbulb,
+  Target,
+  Layers
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -35,6 +41,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Collapsible,
   CollapsibleContent,
@@ -53,6 +66,16 @@ interface Template {
   id: string;
   name: string;
   description: string;
+  features: string[];
+  bestFor: string;
+}
+
+interface AIModel {
+  id: string;
+  name: string;
+  description: string;
+  provider: string;
+  recommended: boolean;
 }
 
 interface HistoryItem {
@@ -60,6 +83,7 @@ interface HistoryItem {
   keyword: string;
   database: string;
   template: string;
+  model: string;
   result: string;
   timestamp: string;
 }
@@ -68,13 +92,16 @@ export default function LiteratureSearchPage() {
   const [keyword, setKeyword] = useState('');
   const [database, setDatabase] = useState('scopus');
   const [template, setTemplate] = useState('stable');
+  const [model, setModel] = useState('doubao-seed-1-8-251228');
   const [databases, setDatabases] = useState<Database[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [models, setModels] = useState<AIModel[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState('');
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   // 加载配置
@@ -84,6 +111,7 @@ export default function LiteratureSearchPage() {
       .then(data => {
         setDatabases(data.databases || []);
         setTemplates(data.templates || []);
+        setModels(data.models || []);
       })
       .catch(console.error);
 
@@ -92,7 +120,19 @@ export default function LiteratureSearchPage() {
     if (savedHistory) {
       setHistory(JSON.parse(savedHistory));
     }
+
+    // 检查是否首次访问
+    const hasSeenGuide = localStorage.getItem('hasSeenLiteratureSearchGuide');
+    if (!hasSeenGuide) {
+      setShowGuide(true);
+    }
   }, []);
+
+  // 标记已看过指南
+  const closeGuide = () => {
+    setShowGuide(false);
+    localStorage.setItem('hasSeenLiteratureSearchGuide', 'true');
+  };
 
   // 保存历史记录
   const saveToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>) => {
@@ -101,7 +141,7 @@ export default function LiteratureSearchPage() {
       id: Date.now().toString(),
       timestamp: new Date().toLocaleString('zh-CN'),
     };
-    const updatedHistory = [newHistory, ...history].slice(0, 20); // 保留最近20条
+    const updatedHistory = [newHistory, ...history].slice(0, 20);
     setHistory(updatedHistory);
     localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
   };
@@ -120,7 +160,7 @@ export default function LiteratureSearchPage() {
       const response = await fetch('/api/literature-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword, database, template }),
+        body: JSON.stringify({ keyword, database, template, model }),
       });
 
       if (!response.ok) {
@@ -148,11 +188,11 @@ export default function LiteratureSearchPage() {
                   setResult(fullResult);
                 }
                 if (data.done) {
-                  // 保存到历史
                   saveToHistory({
                     keyword,
                     database,
                     template,
+                    model,
                     result: fullResult,
                   });
                 }
@@ -182,12 +222,6 @@ export default function LiteratureSearchPage() {
     }
   };
 
-  // 提取检索式部分
-  const extractQueryString = (text: string) => {
-    const match = text.match(/【检索式】\n([\s\S]*?)(?=\n【|$)/);
-    return match ? match[1].trim() : text;
-  };
-
   // 按语言分组数据库
   const groupedDatabases = databases.reduce((acc, db) => {
     const lang = db.language === 'zh' ? '中文数据库' : '英文数据库';
@@ -196,11 +230,87 @@ export default function LiteratureSearchPage() {
     return acc;
   }, {} as Record<string, Database[]>);
 
+  // 按提供商分组模型
+  const groupedModels = models.reduce((acc, m) => {
+    if (!acc[m.provider]) acc[m.provider] = [];
+    acc[m.provider].push(m);
+    return acc;
+  }, {} as Record<string, AIModel[]>);
+
   const selectedDb = databases.find(d => d.id === database);
   const selectedTemplate = templates.find(t => t.id === template);
+  const selectedModel = models.find(m => m.id === model);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* 模式介绍弹窗 */}
+      <Dialog open={showGuide} onOpenChange={setShowGuide}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Lightbulb className="w-6 h-6 text-yellow-500" />
+              选择适合您的检索模式
+            </DialogTitle>
+            <DialogDescription className="text-base pt-2">
+              三种检索策略模板，满足不同需求场景
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            {templates.map((t, index) => (
+              <Card key={t.id} className={`overflow-hidden ${t.id === 'stable' ? 'border-2 border-blue-500' : ''}`}>
+                <div className={`h-1 ${
+                  t.id === 'stable' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
+                  t.id === 'advanced' ? 'bg-gradient-to-r from-purple-500 to-pink-500' :
+                  'bg-gradient-to-r from-orange-500 to-red-500'
+                }`} />
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {t.id === 'stable' && <Zap className="w-5 h-5 text-blue-500" />}
+                      {t.id === 'advanced' && <Layers className="w-5 h-5 text-purple-500" />}
+                      {t.id === 'comprehensive' && <Target className="w-5 h-5 text-orange-500" />}
+                      <h3 className="font-semibold text-lg">{t.name}</h3>
+                      {t.id === 'stable' && (
+                        <Badge className="bg-blue-500 text-white text-xs">推荐新手</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
+                    {t.description}
+                  </p>
+                  <div className="space-y-2 mb-3">
+                    <p className="text-xs font-medium text-slate-500">核心特点：</p>
+                    <div className="flex flex-wrap gap-2">
+                      {t.features.map((f, i) => (
+                        <Badge key={i} variant="outline" className="text-xs">{f}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+                    <p className="text-xs text-slate-500">
+                      <span className="font-medium">适合场景：</span>{t.bestFor}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-300">
+              <strong>💡 建议：</strong>首次使用推荐选择「稳定版」，结果稳定可靠。如需更全面的检索或跨学科研究，可尝试「高级版」。如需中英文文献全覆盖，请选择「全覆盖版」。
+            </p>
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <Button onClick={closeGuide} className="bg-gradient-to-r from-blue-600 to-purple-600">
+              开始使用
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b">
         <div className="container mx-auto px-4 py-4">
@@ -211,9 +321,15 @@ export default function LiteratureSearchPage() {
                 返回服务
               </Link>
             </Button>
-            <Badge variant="outline" className="text-sm">
-              文献检索工具
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowGuide(true)}>
+                <Info className="mr-1 h-4 w-4" />
+                使用指南
+              </Button>
+              <Badge variant="outline" className="text-sm">
+                文献检索工具
+              </Badge>
+            </div>
           </div>
         </div>
       </header>
@@ -310,8 +426,11 @@ export default function LiteratureSearchPage() {
                       <SelectContent>
                         {templates.map((t) => (
                           <SelectItem key={t.id} value={t.id}>
-                            <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
                               <span>{t.name}</span>
+                              {t.id === 'stable' && (
+                                <Badge className="bg-blue-500 text-white text-[10px] py-0">推荐</Badge>
+                              )}
                             </div>
                           </SelectItem>
                         ))}
@@ -319,7 +438,44 @@ export default function LiteratureSearchPage() {
                     </Select>
                     {selectedTemplate && (
                       <p className="text-xs text-slate-500">
-                        {selectedTemplate.description}
+                        {selectedTemplate.description} - {selectedTemplate.bestFor}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* AI Model Selection */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Bot className="w-4 h-4 text-green-500" />
+                      AI模型
+                    </Label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择模型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(groupedModels).map(([provider, modelList]) => (
+                          <div key={provider}>
+                            <div className="px-2 py-1.5 text-sm font-semibold text-slate-500">
+                              {provider}
+                            </div>
+                            {modelList.map((m) => (
+                              <SelectItem key={m.id} value={m.id}>
+                                <div className="flex items-center gap-2">
+                                  <span>{m.name}</span>
+                                  {m.recommended && (
+                                    <Badge className="bg-green-500 text-white text-[10px] py-0">推荐</Badge>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedModel && (
+                      <p className="text-xs text-slate-500">
+                        {selectedModel.description}
                       </p>
                     )}
                   </div>
@@ -356,10 +512,11 @@ export default function LiteratureSearchPage() {
                       </Button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="text-xs text-slate-500 space-y-1 pt-2">
-                      <p>• 稳定版：适合大多数常规检索，结果稳定</p>
-                      <p>• 高级版：支持复杂主题，结果更全面</p>
-                      <p>• 全覆盖版：同时生成多个数据库检索式</p>
+                      <p>• <strong>稳定版</strong>：结果稳定，适合常规检索</p>
+                      <p>• <strong>高级版</strong>：同义词扩展更全面，适合跨学科</p>
+                      <p>• <strong>全覆盖版</strong>：同时生成多数据库检索式</p>
                       <p>• 可多次生成，选择最优结果</p>
+                      <p>• 不同模型生成结果可能略有差异</p>
                     </CollapsibleContent>
                   </Collapsible>
                 </CardContent>
@@ -469,6 +626,7 @@ export default function LiteratureSearchPage() {
                             setKeyword(item.keyword);
                             setDatabase(item.database);
                             setTemplate(item.template);
+                            setModel(item.model || 'doubao-seed-1-8-251228');
                             setResult(item.result);
                             setShowHistory(false);
                           }}
@@ -477,7 +635,7 @@ export default function LiteratureSearchPage() {
                             <span className="font-medium text-sm truncate">{item.keyword}</span>
                             <span className="text-xs text-slate-500">{item.timestamp}</span>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-1">
                             <Badge variant="outline" className="text-xs">
                               {databases.find(d => d.id === item.database)?.name}
                             </Badge>
