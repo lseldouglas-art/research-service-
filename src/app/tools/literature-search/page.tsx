@@ -224,6 +224,7 @@ export default function LiteratureSearchPage() {
   const [focusedKeyword, setFocusedKeyword] = useState('');
   const [focusedDatabase, setFocusedDatabase] = useState('scopus');
   const [focusedModel, setFocusedModel] = useState('deepseek-r1-250528');
+  const [promptVersion, setPromptVersion] = useState<'stable' | 'extended'>('stable');
   const [focusedResult, setFocusedResult] = useState('');
   const [isFocusedGenerating, setIsFocusedGenerating] = useState(false);
   
@@ -363,6 +364,7 @@ export default function LiteratureSearchPage() {
           database: focusedDatabase,
           model: focusedModel,
           type: 'matrix-construction',
+          promptVersion: promptVersion,
         }),
       });
 
@@ -1188,6 +1190,49 @@ export default function LiteratureSearchPage() {
                               ))}
                             </SelectContent>
                           </Select>
+                        </div>
+
+                        {/* 提示词版本选择 */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-purple-500" />
+                            提示词模板
+                          </Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div
+                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                promptVersion === 'stable'
+                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                                  : 'border-slate-200 hover:border-slate-300'
+                              }`}
+                              onClick={() => setPromptVersion('stable')}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <Zap className="w-4 h-4 text-blue-500" />
+                                <span className="font-medium text-sm">稳定版</span>
+                              </div>
+                              <p className="text-xs text-slate-500">概念分解 + 语义群 + 组合策略</p>
+                            </div>
+                            <div
+                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                promptVersion === 'extended'
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30'
+                                  : 'border-slate-200 hover:border-slate-300'
+                              }`}
+                              onClick={() => setPromptVersion('extended')}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <Layers className="w-4 h-4 text-purple-500" />
+                                <span className="font-medium text-sm">扩展版</span>
+                              </div>
+                              <p className="text-xs text-slate-500">角色分配 + 四阶段计划 + 质量检验</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {promptVersion === 'stable' 
+                              ? '稳定版：快速生成组合检索策略，适合大多数场景'
+                              : '扩展版：详细的角色分配和四阶段计划，适合复杂主题'}
+                          </p>
                         </div>
 
                         <Button
