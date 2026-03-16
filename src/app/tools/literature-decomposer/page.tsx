@@ -101,6 +101,12 @@ const STEPS = {
     description: '论点整合',
     icon: GitBranch,
   },
+  'paragraph-writing': {
+    id: 'paragraph-writing',
+    name: '段落撰写',
+    description: '精细写作',
+    icon: PenTool,
+  },
 };
 
 // AI模型类型
@@ -273,9 +279,55 @@ function generateClusterRecommendations(outlineLength: number): {
   };
 }
 
+// 生成第四步专属建议
+function generateWritingRecommendations(): {
+  corePrinciples: Array<{ principle: string; description: string }>;
+  writingTechniques: string[];
+  qualityChecklist: string[];
+  iterationStrategy: string[];
+} {
+  return {
+    corePrinciples: [
+      { 
+        principle: '绝对忠于原文', 
+        description: '只转述和整合，不推理和创作。严禁引入文献未提及的机制或术语' 
+      },
+      { 
+        principle: '拥抱复杂性', 
+        description: '如实呈现文献间的差异或矛盾，不为了流畅而忽略争议' 
+      },
+      { 
+        principle: '量化声明溯源', 
+        description: '所有数值、百分比必须直接来自文献，禁止二次计算' 
+      },
+    ],
+    writingTechniques: [
+      '📝 以论点引领开篇：段落首句就是完整、有分析性的学术句子',
+      '🔗 多对多整合：根据逻辑关系融合多篇文献，避免逐一罗列',
+      '⚖️ 优势-代价论证：将局限性作为论证的有机组成部分',
+      '🎯 高密度写作：每句话都必要，要么论点、要么证据、要么分析',
+    ],
+    qualityChecklist: [
+      '□ 开篇句是否为完整论点（而非宽泛主题句）？',
+      '□ 是否避免了"论文A说...论文B说..."的罗列模式？',
+      '□ 争议/矛盾是否被如实呈现？',
+      '□ 所有数据是否有[REF-XX]引用？',
+      '□ 局限性是否被有机融入论证？',
+      '□ 结尾是否精炼重申核心论点？',
+    ],
+    iterationStrategy: [
+      '1️⃣ 初稿评估：对照质量检查清单，识别问题',
+      '2️⃣ 准备材料：从素材库调取相关文献原文',
+      '3️⃣ 精准指令：问题+要求+材料 → AI',
+      '4️⃣ 验证改进：确认修改效果，记录优化点',
+      '5️⃣ 重复迭代：直到达到目标质量',
+    ],
+  };
+}
+
 export default function LiteratureDecomposerPage() {
   // 步骤状态
-  const [currentStep, setCurrentStep] = useState<'literature-split' | 'batch-analysis' | 'clustering-outline'>('literature-split');
+  const [currentStep, setCurrentStep] = useState<'literature-split' | 'batch-analysis' | 'clustering-outline' | 'paragraph-writing'>('literature-split');
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   
   // 复制状态
@@ -333,6 +385,21 @@ export default function LiteratureDecomposerPage() {
   
   // 第三步建议
   const [clusterRecommendations, setClusterRecommendations] = useState<ReturnType<typeof generateClusterRecommendations> | null>(null);
+  
+  // 第四步：段落撰写
+  const [isWriting, setIsWriting] = useState(false);
+  const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
+  const [paragraphResults, setParagraphResults] = useState<string[]>([]);
+  const [parsedOutline, setParsedOutline] = useState<Array<{
+    section: string;
+    title: string;
+    coreClaim: string;
+    supportingMaterials: string[];
+    logic: string;
+  }>>([]);
+  
+  // 第四步建议
+  const [writingRecommendations, setWritingRecommendations] = useState<ReturnType<typeof generateWritingRecommendations> | null>(null);
 
   useEffect(() => {
     // 加载AI模型列表
@@ -565,6 +632,144 @@ export default function LiteratureDecomposerPage() {
     }
   };
 
+  // 解析大纲为段落列表
+  const parseOutlineToParagraphs = (outline: string) => {
+    const paragraphs: Array<{
+      section: string;
+      title: string;
+      coreClaim: string;
+      supportingMaterials: string[];
+      logic: string;
+    }> = [];
+
+    // 按段落主题分割
+    const sections = outline.split(/###\s*段落\s*\d+/);
+    
+    sections.forEach((section, index) => {
+      if (index === 0) return; // 跳过第一个空段
+      
+      const titleMatch = section.match(/^[:：]?\s*(.+?)(?:\n|$)/);
+      const materialsMatch = section.match(/\*\*支撑材料\*\*[:：]?\s*([^\n]+)/);
+      const claimMatch = section.match(/\*\*核心主张\*\*[:：]?\s*([^\n]+)/);
+      const logicMatch = section.match(/\*\*段落间逻辑\*\*[:：]?\s*([^\n]+)/);
+      
+      paragraphs.push({
+        section: `段落 ${index}`,
+        title: titleMatch ? titleMatch[1].trim() : `段落 ${index}`,
+        coreClaim: claimMatch ? claimMatch[1].trim() : '',
+        supportingMaterials: materialsMatch 
+          ? materialsMatch[1].split(/[,，]/).map(m => m.trim().replace(/[[\]]/g, ''))
+          : [],
+        logic: logicMatch ? logicMatch[1].trim() : '',
+      });
+    });
+
+    return paragraphs;
+  };
+
+  // 第四步：执行段落撰写
+  const writeParagraph = async (paragraphIndex: number) => {
+    if (!clusterOutline || !splitResult) {
+      alert('请先完成聚类大纲生成');
+      return;
+    }
+
+    // 解析大纲（首次）
+    let paragraphs = parsedOutline;
+    if (paragraphs.length === 0) {
+      paragraphs = parseOutlineToParagraphs(clusterOutline);
+      setParsedOutline(paragraphs);
+    }
+
+    if (paragraphIndex >= paragraphs.length) {
+      alert('段落索引超出范围');
+      return;
+    }
+
+    const paragraph = paragraphs[paragraphIndex];
+    setIsWriting(true);
+    setCurrentParagraphIndex(paragraphIndex);
+
+    // 获取对应的文献
+    const relevantPapers = splitResult.batches.flatMap(batch => batch.papers)
+      .filter(paper => paragraph.supportingMaterials.some(mat => 
+        paper.id === mat || paper.title.includes(mat) || mat.includes(paper.id)
+      ));
+
+    try {
+      const response = await fetch('/api/literature-decomposer/write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paragraphTopic: paragraph,
+          literatureList: relevantPapers.length > 0 ? relevantPapers : splitResult.batches[0].papers.slice(0, 10),
+          model: selectedModel,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('撰写失败');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let fullResult = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.content) {
+                  fullResult += data.content;
+                  const newResults = [...paragraphResults];
+                  newResults[paragraphIndex] = fullResult;
+                  setParagraphResults(newResults);
+                }
+              } catch {
+                // 忽略解析错误
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('段落撰写失败');
+    } finally {
+      setIsWriting(false);
+    }
+  };
+
+  // 执行所有段落撰写
+  const writeAllParagraphs = async () => {
+    // 解析大纲
+    let paragraphs = parsedOutline;
+    if (paragraphs.length === 0) {
+      paragraphs = parseOutlineToParagraphs(clusterOutline);
+      setParsedOutline(paragraphs);
+    }
+
+    // 生成专属建议
+    const recommendations = generateWritingRecommendations();
+    setWritingRecommendations(recommendations);
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      if (!paragraphResults[i]) {
+        await writeParagraph(i);
+      }
+    }
+
+    setCompletedSteps(prev => [...prev, 'paragraph-writing']);
+  };
+
   // 复制功能
   const copyResult = async (text: string) => {
     try {
@@ -622,7 +827,7 @@ export default function LiteratureDecomposerPage() {
               本工具已为您准备好所有材料，随时可调用。
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Object.values(STEPS).map((step) => (
               <div key={step.id} className="flex flex-col items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <step.icon className="w-8 h-8 text-blue-500" />
@@ -744,7 +949,7 @@ export default function LiteratureDecomposerPage() {
               文献分解器使用指南
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
-              三步完成文献素材库的系统化分解 + 迭代优化闭环
+              四步完成文献素材库的系统化分解 + 迭代优化闭环
             </DialogDescription>
           </DialogHeader>
           
@@ -839,7 +1044,7 @@ export default function LiteratureDecomposerPage() {
           <div className="text-center mb-8">
             <Badge variant="secondary" className="mb-4">
               <Split className="w-3 h-3 mr-1" />
-              三步流程 + 迭代优化
+              四步流程 + 迭代优化
             </Badge>
             <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
               文献素材库分解器
@@ -868,6 +1073,10 @@ export default function LiteratureDecomposerPage() {
                     }
                     if (step.id === 'clustering-outline' && analysisResults.length === 0) {
                       alert('请先完成分批分析');
+                      return;
+                    }
+                    if (step.id === 'paragraph-writing' && !clusterOutline) {
+                      alert('请先完成聚类大纲生成');
                       return;
                     }
                     setCurrentStep(step.id as any);
@@ -1734,41 +1943,405 @@ export default function LiteratureDecomposerPage() {
                     <CardHeader>
                       <CardTitle className="text-base flex items-center gap-2">
                         <Zap className="w-4 h-4 text-yellow-500" />
-                        最终写作执行
+                        进阶功能：段落精细撰写
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-lg">
+                        <p className="text-sm font-medium text-indigo-800 dark:text-indigo-300 mb-2">
+                          ✨ 第四步：段落精细撰写
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                          基于精细化大纲，为每个段落生成高质量的学术内容。AI将严格遵循文献证据，编织有深度、有批判性的学术段落。
+                        </p>
+                        <Button
+                          className="bg-gradient-to-r from-indigo-600 to-purple-600"
+                          onClick={() => {
+                            setCompletedSteps(prev => [...prev, 'clustering-outline']);
+                            setCurrentStep('paragraph-writing');
+                          }}
+                        >
+                          <PenTool className="mr-2 h-4 w-4" />
+                          进入段落撰写
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 第四步：段落撰写 */}
+          {currentStep === 'paragraph-writing' && (
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-4">
+                <Card className="sticky top-24">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <PenTool className="w-5 h-5 text-purple-500" />
+                      段落精细撰写
+                    </CardTitle>
+                    <CardDescription>
+                      基于大纲逐段落撰写学术内容
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 当前状态 */}
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">总段落数</span>
+                        <Badge variant="outline">{parsedOutline.length || '待解析'}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">已完成</span>
+                        <Badge className="bg-green-500">{paragraphResults.filter(r => r).length}</Badge>
+                      </div>
+                    </div>
+
+                    {/* AI模型选择 */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Bot className="w-4 h-4 text-green-500" />
+                        AI模型
+                      </Label>
+                      <Select value={selectedModel} onValueChange={setSelectedModel}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(groupedModels).map(([provider, modelList]) => (
+                            <div key={provider}>
+                              <div className="px-2 py-1.5 text-sm font-semibold text-slate-500">
+                                {provider}
+                              </div>
+                              {modelList.map((m) => (
+                                <SelectItem key={m.id} value={m.id}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{m.name}</span>
+                                    {m.recommended && (
+                                      <Badge className="bg-green-500 text-white text-[10px] py-0">推荐</Badge>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 撰写原则说明 */}
+                    <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                      <p className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-2">
+                        核心撰写原则
+                      </p>
+                      <div className="space-y-1 text-xs text-purple-700 dark:text-purple-400">
+                        <p>• 绝对忠于原文，不臆造信息</p>
+                        <p>• 拥抱复杂性，如实呈现争议</p>
+                        <p>• 量化声明必须溯源</p>
+                        <p>• 以论点引领开篇</p>
+                      </div>
+                    </div>
+
+                    {/* 操作按钮 */}
+                    <div className="space-y-2">
+                      <Button
+                        onClick={writeAllParagraphs}
+                        disabled={isWriting || !clusterOutline}
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
+                        size="lg"
+                      >
+                        {isWriting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            撰写中 ({currentParagraphIndex + 1}/{parsedOutline.length || '?'})
+                          </>
+                        ) : (
+                          <>
+                            <PenTool className="mr-2 h-4 w-4" />
+                            撰写所有段落
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setCurrentStep('clustering-outline')}
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        返回聚类大纲
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="lg:col-span-2 space-y-4">
+                {/* 专属建议卡片 */}
+                {writingRecommendations && (
+                  <Card className="bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <FileCheck className="w-5 h-5 text-purple-600" />
+                        学术段落撰写指南
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 核心原则 */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">📜 核心执行指令</p>
+                        {writingRecommendations.corePrinciples.map((p, i) => (
+                          <div key={i} className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                            <p className="text-sm font-medium text-purple-800 dark:text-purple-300">{p.principle}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">{p.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* 写作技巧 */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="w-full justify-between" size="sm">
+                            <span className="flex items-center gap-1">
+                              <PenTool className="w-4 h-4" />
+                              写作技巧
+                            </span>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pt-2">
+                          {writingRecommendations.writingTechniques.map((tech, i) => (
+                            <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                              {tech}
+                            </p>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                      
+                      {/* 质量检查清单 */}
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                          ✅ 质量检查清单
+                        </p>
+                        <div className="grid grid-cols-2 gap-1 mt-2">
+                          {writingRecommendations.qualityChecklist.map((item, i) => (
+                            <p key={i} className="text-xs text-amber-700 dark:text-amber-400">
+                              {item}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* 迭代策略 */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="w-full justify-between" size="sm">
+                            <span className="flex items-center gap-1">
+                              <RefreshCw className="w-4 h-4" />
+                              迭代优化策略
+                            </span>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pt-2">
+                          {writingRecommendations.iterationStrategy.map((step, i) => (
+                            <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                              {step}
+                            </p>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* 段落进度 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <ListOrdered className="w-5 h-5" />
+                      段落撰写进度
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                      {parsedOutline.map((para, index) => (
+                        <div
+                          key={index}
+                          className={`p-2 rounded-lg text-center cursor-pointer transition-all ${
+                            paragraphResults[index]
+                              ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                              : currentParagraphIndex === index && isWriting
+                              ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}
+                          onClick={() => !isWriting && writeParagraph(index)}
+                        >
+                          <p className="text-xs font-medium truncate">{para.section || `段落 ${index + 1}`}</p>
+                          {paragraphResults[index] && (
+                            <CheckCircle2 className="w-4 h-4 mx-auto mt-1" />
+                          )}
+                        </div>
+                      ))}
+                      {parsedOutline.length === 0 && (
+                        <p className="col-span-full text-center text-sm text-slate-500">
+                          点击"撰写所有段落"开始解析大纲
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 段落撰写结果 */}
+                <Card className="min-h-[400px]">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      撰写结果
+                    </CardTitle>
+                    {paragraphResults.some(r => r) && (
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => copyResult(paragraphResults.filter(r => r).join('\n\n---\n\n'))}>
+                          {copied ? (
+                            <>
+                              <Check className="mr-1 h-4 w-4 text-green-500" />
+                              已复制
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="mr-1 h-4 w-4" />
+                              复制全部
+                            </>
+                          )}
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Download className="mr-1 h-4 w-4" />
+                          导出
+                        </Button>
+                      </div>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    {!paragraphResults.some(r => r) && !isWriting ? (
+                      <div className="h-[300px] flex flex-col items-center justify-center text-slate-400">
+                        <PenTool className="w-16 h-16 mb-4 opacity-50" />
+                        <p>点击"撰写所有段落"开始撰写</p>
+                        <p className="text-sm mt-2">AI将基于大纲逐段落生成高质量学术内容</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {paragraphResults.map((result, index) => result && (
+                          <div key={index} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="font-medium text-sm">
+                                {parsedOutline[index]?.section || `段落 ${index + 1}`}: {parsedOutline[index]?.title || ''}
+                              </p>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => copyResult(result)}
+                              >
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                              <pre className="whitespace-pre-wrap text-sm font-mono overflow-auto">
+                                {result}
+                              </pre>
+                            </div>
+                          </div>
+                        ))}
+                        {isWriting && (
+                          <div className="flex items-center justify-center p-4">
+                            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+                            <span className="ml-2 text-sm text-slate-500">
+                              正在撰写段落 {currentParagraphIndex + 1}...
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* 完成提示 */}
+                {paragraphResults.filter(r => r).length === parsedOutline.length && parsedOutline.length > 0 && (
+                  <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+                    <CardContent className="py-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-green-600" />
+                        <div className="flex-1">
+                          <p className="font-medium text-green-800 dark:text-green-300">
+                            所有段落撰写完成
+                          </p>
+                          <p className="text-sm text-green-700 dark:text-green-400">
+                            已生成 {paragraphResults.filter(r => r).length} 个段落的学术内容
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => writeAllParagraphs()}
+                        >
+                          <RefreshCw className="mr-1 h-4 w-4" />
+                          重新撰写
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* 后续行动建议 */}
+                {paragraphResults.some(r => r) && !isWriting && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        后续优化建议
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                           <p className="font-medium text-blue-800 dark:text-blue-300 text-sm mb-1">
-                            1. 段落写作
+                            1. 整合检查
                           </p>
                           <p className="text-xs text-slate-600 dark:text-slate-400">
-                            按大纲逐段落写作，引用对应文献
+                            确保段落间逻辑连贯，过渡自然
                           </p>
                         </div>
                         <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
                           <p className="font-medium text-purple-800 dark:text-purple-300 text-sm mb-1">
-                            2. 迭代优化
+                            2. 引用规范
                           </p>
                           <p className="text-xs text-slate-600 dark:text-slate-400">
-                            发现问题→准备材料→向AI提需求
+                            检查[REF-XX]格式，准备正式引用列表
                           </p>
                         </div>
                         <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
                           <p className="font-medium text-green-800 dark:text-green-300 text-sm mb-1">
-                            3. 质量检查
+                            3. 细节优化
                           </p>
                           <p className="text-xs text-slate-600 dark:text-slate-400">
-                            确保每个论点都有文献支撑
+                            表达精修、用词调整、语法检查
+                          </p>
+                        </div>
+                        <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+                          <p className="font-medium text-amber-800 dark:text-amber-300 text-sm mb-1">
+                            4. 事实核查
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            对照原文确认数据、术语准确性
                           </p>
                         </div>
                       </div>
                       
-                      <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                      <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-lg">
                         <p className="text-xs text-slate-600 dark:text-slate-400">
                           <strong>💡 提醒：</strong>
-                          <span className="ml-1">AI生成的是初稿，优化需要「明确要求 + 提供材料」。所有文献材料已准备好，随时可调用。</span>
+                          <span className="ml-1">这是AI生成的初稿。如需优化，请准备好具体的修改要求和对应的文献材料，然后向AI提出迭代需求。</span>
                         </p>
                       </div>
                     </CardContent>
