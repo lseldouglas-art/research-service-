@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,12 @@ import {
   AlertTriangle,
   Settings,
   Info,
+  MessageSquare,
+  TrendingUp,
+  FileCheck,
+  Zap,
+  Eye,
+  FileCode,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -73,6 +79,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert';
 import { Slider } from '@/components/ui/slider';
+import { Progress } from '@/components/ui/progress';
 
 // 步骤配置
 const STEPS = {
@@ -102,6 +109,168 @@ interface AIModel {
   name: string;
   provider: string;
   recommended?: boolean;
+}
+
+// 生成第一步专属建议
+function generateSplitRecommendations(result: {
+  totalPapers: number;
+  totalBatches: number;
+  statistics: {
+    gradeDistribution: { A: number; B: number; C: number; D: number };
+    yearRange: { min: number; max: number };
+  };
+}): {
+  quality: 'excellent' | 'good' | 'moderate' | 'needs-work';
+  score: number;
+  insights: string[];
+  actions: string[];
+  nextStepGuidance: string;
+} {
+  const { totalPapers, totalBatches, statistics } = result;
+  const { gradeDistribution, yearRange } = statistics;
+  
+  const highQualityCount = gradeDistribution.A + gradeDistribution.B;
+  const highQualityRatio = totalPapers > 0 ? highQualityCount / totalPapers : 0;
+  
+  let quality: 'excellent' | 'good' | 'moderate' | 'needs-work';
+  let score: number;
+  const insights: string[] = [];
+  const actions: string[] = [];
+  
+  // 评估质量等级
+  if (highQualityRatio >= 0.7 && gradeDistribution.A >= 10) {
+    quality = 'excellent';
+    score = 90;
+    insights.push('文献库质量优秀，A级和B级文献占比高，研究基础扎实');
+  } else if (highQualityRatio >= 0.5 && gradeDistribution.A >= 5) {
+    quality = 'good';
+    score = 75;
+    insights.push('文献库质量良好，核心文献充足，可支撑高质量写作');
+  } else if (highQualityRatio >= 0.3) {
+    quality = 'moderate';
+    score = 60;
+    insights.push('文献库质量中等，建议后续补充更多高相关度文献');
+  } else {
+    quality = 'needs-work';
+    score = 40;
+    insights.push('文献库相关度偏低，建议重新审视筛选标准');
+  }
+  
+  // 数量分析
+  if (totalPapers < 30) {
+    insights.push(`文献总量${totalPapers}篇偏少，可能影响综述深度`);
+    actions.push('建议：补充更多相关文献以增强论证力度');
+  } else if (totalPapers > 150) {
+    insights.push(`文献总量${totalPapers}篇较丰富，注意控制写作聚焦度`);
+    actions.push('建议：优先聚焦A/B级文献，C/D级文献可作为补充');
+  } else {
+    insights.push(`文献总量${totalPapers}篇适中，便于系统梳理`);
+  }
+  
+  // 批次分析
+  if (totalBatches > 5) {
+    actions.push(`建议：分${totalBatches}批次处理，注意跨批次结果的整合`);
+  }
+  
+  // 年份分析
+  if (yearRange.max - yearRange.min > 10) {
+    insights.push(`时间跨度${yearRange.max - yearRange.min}年，可分析研究演进脉络`);
+  } else {
+    insights.push(`时间跨度较短，聚焦前沿研究成果`);
+  }
+  
+  // 等级分布建议
+  if (gradeDistribution.D > totalPapers * 0.3) {
+    actions.push('建议：D级文献较多，考虑是否需要重新评估相关性');
+  }
+  
+  if (gradeDistribution.A < 5) {
+    actions.push('建议：A级核心文献较少，建议补充领域经典文献');
+  }
+  
+  // 下一步指导
+  const nextStepGuidance = quality === 'excellent' || quality === 'good'
+    ? '文献库质量达标，可进入分批分析阶段。建议：为每批次准备特定的分析重点，充分利用高质量文献。'
+    : '建议先优化文献库质量，或调整分析策略以适应现有材料。';
+  
+  return { quality, score, insights, actions, nextStepGuidance };
+}
+
+// 生成第二步专属建议
+function generateAnalysisRecommendations(
+  completedBatches: number,
+  totalBatches: number,
+  resultsLength: number
+): {
+  positioning: string;
+  commonIssues: string[];
+  optimizationGuide: string[];
+  materialPreparation: string[];
+} {
+  const allCompleted = completedBatches === totalBatches;
+  
+  const positioning = `AI分析结果是一个「60分的基础框架」。在没有注入你的个人审美、学科特点、具体语境的情况下，AI只能产出60分左右的分析结果。`;
+  
+  const commonIssues = [
+    '信息堆砌：AI生成的结果往往只是信息的罗列，缺乏深层叙事逻辑',
+    '表达平淡：AI的表达往往比较中性，缺乏你所在学科领域的味道',
+    '逻辑跳跃：段落之间可能存在衔接不畅的问题',
+    '信息密度：某些段落可能过于拥挤或过于稀疏',
+  ];
+  
+  const optimizationGuide = [
+    '🔍 发现问题：凭直觉感到哪里不对劲时，明确问题所在',
+    '📋 判断需求：AI需要什么材料才能解决这个问题？',
+    '📁 准备材料：从文献素材库中调取对应的文献内容',
+    '💬 清晰指令：把问题、要求和材料一起发给AI',
+    '✅ 获得方案：AI基于完整信息给出修改建议',
+    '🎯 你来决策：选择或调整方案',
+  ];
+  
+  const materialPreparation = allCompleted ? [
+    '所有批次分析完成，建议整理每批次的关键发现',
+    '记录发现的问题点，为聚类大纲阶段做准备',
+    '标注需要深度阅读全文的文献（复杂机制/方法）',
+  ] : [
+    '正在分析中，请耐心等待所有批次完成',
+    '完成后请检查各批次结果的连贯性',
+  ];
+  
+  return { positioning, commonIssues, optimizationGuide, materialPreparation };
+}
+
+// 生成第三步专属建议
+function generateClusterRecommendations(outlineLength: number): {
+  optimizationLevels: Array<{ level: string; focus: string; method: string }>;
+  materialManagement: string[];
+  iterationGuide: string[];
+  whenToReadFullText: string[];
+} {
+  return {
+    optimizationLevels: [
+      { level: '60→70分', focus: '逻辑层面', method: '审视信息关系（递进/对比/因果/并列），优化段落衔接' },
+      { level: '70→80分', focus: '表达层面', method: '调整句子节奏感、精修用词、规范语法' },
+      { level: '80→90分', focus: '深度层面', method: '注入学科理解、批判性讨论、独特见解' },
+    ],
+    materialManagement: [
+      '📁 为每个段落创建独立的文献材料包（类似记事本文件）',
+      '🏷️ 使用RE编号系统标记文献，便于快速定位',
+      '📝 记录优化过程中发现的问题和修改思路',
+      '🔄 保持文献材料与写作内容的对应关系',
+    ],
+    iterationGuide: [
+      '1️⃣ 发现问题：把觉得不对的地方具体描述出来',
+      '2️⃣ 准备材料：找到相关文献的原文内容',
+      '3️⃣ 发送指令：问题 + 要求 + 材料 → AI',
+      '4️⃣ 验证结果：确认改进效果，必要时进行下一轮',
+      '⚠️ 关键：提示词告诉AI要做什么，材料让AI知道用什么做',
+    ],
+    whenToReadFullText: [
+      '✅ 值得阅读全文：摘要不足以理解复杂机制/方法/结论',
+      '✅ 值得阅读全文：想发现摘要中没有但对综述有价值的洞见',
+      '❌ 不必阅读全文：摘要已足够且事实核查无误，验证性阅读性价比低',
+    ],
+  };
 }
 
 export default function LiteratureDecomposerPage() {
@@ -145,6 +314,9 @@ export default function LiteratureDecomposerPage() {
     };
   } | null>(null);
   
+  // 第一步建议
+  const [splitRecommendations, setSplitRecommendations] = useState<ReturnType<typeof generateSplitRecommendations> | null>(null);
+  
   // 第二步：分批分析
   const [analysisPrompt, setAnalysisPrompt] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -152,14 +324,15 @@ export default function LiteratureDecomposerPage() {
   const [analysisResults, setAnalysisResults] = useState<string[]>([]);
   const [combinedAnalysis, setCombinedAnalysis] = useState('');
   
+  // 第二步建议
+  const [analysisRecommendations, setAnalysisRecommendations] = useState<ReturnType<typeof generateAnalysisRecommendations> | null>(null);
+  
   // 第三步：聚类大纲
   const [isClustering, setIsClustering] = useState(false);
   const [clusterOutline, setClusterOutline] = useState('');
-  const [paragraphFiles, setParagraphFiles] = useState<Array<{
-    section: string;
-    title: string;
-    paperCount: number;
-  }>>([]);
+  
+  // 第三步建议
+  const [clusterRecommendations, setClusterRecommendations] = useState<ReturnType<typeof generateClusterRecommendations> | null>(null);
 
   useEffect(() => {
     // 加载AI模型列表
@@ -193,7 +366,6 @@ export default function LiteratureDecomposerPage() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setLiteratureFile(file);
   };
 
@@ -222,6 +394,11 @@ export default function LiteratureDecomposerPage() {
 
       const result = await response.json();
       setSplitResult(result);
+      
+      // 生成专属建议
+      const recommendations = generateSplitRecommendations(result);
+      setSplitRecommendations(recommendations);
+      
       setCompletedSteps(prev => [...prev, 'literature-split']);
     } catch (error) {
       console.error('Error:', error);
@@ -311,6 +488,15 @@ export default function LiteratureDecomposerPage() {
     // 合并所有分析结果
     const combined = analysisResults.join('\n\n---\n\n');
     setCombinedAnalysis(combined);
+    
+    // 生成专属建议
+    const recommendations = generateAnalysisRecommendations(
+      analysisResults.filter(r => r).length,
+      splitResult.totalBatches,
+      combined.length
+    );
+    setAnalysisRecommendations(recommendations);
+    
     setCompletedSteps(prev => [...prev, 'batch-analysis']);
   };
 
@@ -364,8 +550,12 @@ export default function LiteratureDecomposerPage() {
             }
           }
         }
-      }
 
+        // 生成专属建议
+        const recommendations = generateClusterRecommendations(fullResult.length);
+        setClusterRecommendations(recommendations);
+      }
+      
       setCompletedSteps(prev => [...prev, 'clustering-outline']);
     } catch (error) {
       console.error('Error:', error);
@@ -421,8 +611,17 @@ export default function LiteratureDecomposerPage() {
       content: (
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            文献分解器帮助您将大型文献素材库系统化分解，实现精准的段落级写作支撑。
+            文献分解器帮助您将大型文献素材库系统化分解，实现段落级精准写作支撑。
           </p>
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              💡 核心理念
+            </p>
+            <p className="text-xs text-blue-700 dark:text-blue-400">
+              AI生成的是「60分初稿」，优化需要：明确要求（提示词）+ 提供材料（文献内容）。
+              本工具已为您准备好所有材料，随时可调用。
+            </p>
+          </div>
           <div className="grid grid-cols-3 gap-3">
             {Object.values(STEPS).map((step) => (
               <div key={step.id} className="flex flex-col items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
@@ -465,39 +664,38 @@ export default function LiteratureDecomposerPage() {
               </p>
             </div>
           </div>
-          <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
-            <p className="text-xs text-orange-800 dark:text-orange-300">
-              <strong>⚠️ 注意：</strong>建议每批次不超过50篇，超过75篇可能导致分析质量下降
+        </div>
+      ),
+    },
+    {
+      title: '从60分到90分',
+      icon: <TrendingUp className="w-6 h-6 text-purple-500" />,
+      content: (
+        <div className="space-y-4">
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+            <p className="font-medium text-amber-800 dark:text-amber-300 text-sm">AI初稿定位</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+              AI生成的是60分基础框架。优化重点取决于你的基础：
+              零基础同学学习表达方式，有基础同学注入学科理解。
             </p>
           </div>
-        </div>
-      ),
-    },
-    {
-      title: '分批分析策略',
-      icon: <Bot className="w-6 h-6 text-purple-500" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            逐批处理，避免认知过载，确保分析质量：
-          </p>
           <div className="space-y-2">
-            <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
-              <p className="font-medium text-purple-800 dark:text-purple-300 text-sm">标准化输出</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                每批生成统一的文献-论点关联表格
+            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <p className="font-medium text-sm">60→70分：逻辑层面</p>
+              <p className="text-xs text-slate-500 mt-1">
+                信息关系、段落衔接、论述线索
               </p>
             </div>
-            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
-              <p className="font-medium text-indigo-800 dark:text-indigo-300 text-sm">逐一审查</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                确保每篇文献都被充分分析，降低幻觉风险
+            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <p className="font-medium text-sm">70→80分：表达层面</p>
+              <p className="text-xs text-slate-500 mt-1">
+                句子节奏、用词精准、语法规范
               </p>
             </div>
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-              <p className="font-medium text-blue-800 dark:text-blue-300 text-sm">结果整合</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                自动合并多批次分析结果
+            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <p className="font-medium text-sm">80→90分：深度层面</p>
+              <p className="text-xs text-slate-500 mt-1">
+                学科理解、批判讨论、独特见解
               </p>
             </div>
           </div>
@@ -505,32 +703,30 @@ export default function LiteratureDecomposerPage() {
       ),
     },
     {
-      title: '聚类与大纲生成',
-      icon: <GitBranch className="w-6 h-6 text-indigo-500" />,
+      title: '迭代优化方法',
+      icon: <RefreshCw className="w-6 h-6 text-indigo-500" />,
       content: (
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            基于机制相似性的科学聚类，生成段落级写作大纲：
+            优化效果不理想，往往是因为只给了指令，没给材料。
           </p>
-          <div className="space-y-2">
-            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
-              <p className="font-medium text-indigo-800 dark:text-indigo-300 text-sm">论点聚类</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                按照机制相似性将论点科学分组
-              </p>
+          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg space-y-2">
+            <p className="font-medium text-indigo-800 dark:text-indigo-300 text-sm">
+              🔄 迭代模式
+            </p>
+            <div className="space-y-1 text-xs text-indigo-700 dark:text-indigo-400">
+              <p>1. 发现问题 → 感到哪里不对劲</p>
+              <p>2. 判断需求 → AI需要什么材料？</p>
+              <p>3. 准备材料 → 从素材库调取文献</p>
+              <p>4. 清晰指令 → 问题+要求+材料</p>
+              <p>5. 获得方案 → AI给出修改建议</p>
+              <p>6. 你来决策 → 选择或调整方案</p>
             </div>
-            <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-              <p className="font-medium text-green-800 dark:text-green-300 text-sm">逻辑大纲</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                生成具备明确逻辑关系的段落写作大纲
-              </p>
-            </div>
-            <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
-              <p className="font-medium text-orange-800 dark:text-orange-300 text-sm">文献匹配</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                每个段落都有对应的文献支撑文件
-              </p>
-            </div>
+          </div>
+          <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
+            <p className="text-xs text-red-700 dark:text-red-400">
+              <strong>⚠️ 关键：</strong>提示词告诉AI要做什么，材料让AI知道用什么做。两者缺一不可。
+            </p>
           </div>
         </div>
       ),
@@ -548,7 +744,7 @@ export default function LiteratureDecomposerPage() {
               文献分解器使用指南
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
-              三步完成文献素材库的系统化分解
+              三步完成文献素材库的系统化分解 + 迭代优化闭环
             </DialogDescription>
           </DialogHeader>
           
@@ -643,7 +839,7 @@ export default function LiteratureDecomposerPage() {
           <div className="text-center mb-8">
             <Badge variant="secondary" className="mb-4">
               <Split className="w-3 h-3 mr-1" />
-              三步流程
+              三步流程 + 迭代优化
             </Badge>
             <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
               文献素材库分解器
@@ -802,6 +998,67 @@ export default function LiteratureDecomposerPage() {
               </div>
 
               <div className="lg:col-span-2 space-y-4">
+                {/* 专属建议卡片 */}
+                {splitRecommendations && (
+                  <Card className={`${
+                    splitRecommendations.quality === 'excellent' ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800' :
+                    splitRecommendations.quality === 'good' ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800' :
+                    splitRecommendations.quality === 'moderate' ? 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800' :
+                    'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
+                  }`}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5" />
+                        您的专属建议
+                        <Badge className={`ml-auto ${
+                          splitRecommendations.quality === 'excellent' ? 'bg-green-500' :
+                          splitRecommendations.quality === 'good' ? 'bg-blue-500' :
+                          splitRecommendations.quality === 'moderate' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`}>
+                          {splitRecommendations.score}分
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {/* 质量评估 */}
+                      <div className="flex items-center gap-2">
+                        <Progress value={splitRecommendations.score} className="flex-1" />
+                      </div>
+                      
+                      {/* 洞察 */}
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">📊 分析洞察</p>
+                        {splitRecommendations.insights.map((insight, i) => (
+                          <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                            • {insight}
+                          </p>
+                        ))}
+                      </div>
+                      
+                      {/* 行动建议 */}
+                      {splitRecommendations.actions.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">🎯 行动建议</p>
+                          {splitRecommendations.actions.map((action, i) => (
+                            <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                              • {action}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 下一步指导 */}
+                      <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg mt-2">
+                        <p className="text-sm font-medium">➡️ 下一步指导</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          {splitRecommendations.nextStepGuidance}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card className="min-h-[400px]">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -885,7 +1142,7 @@ export default function LiteratureDecomposerPage() {
                         {/* 批次列表 */}
                         <div className="space-y-2">
                           <p className="text-sm font-medium">批次详情</p>
-                          <div className="max-h-[300px] overflow-y-auto space-y-2">
+                          <div className="max-h-[200px] overflow-y-auto space-y-2">
                             {splitResult.batches.map((batch, index) => (
                               <div 
                                 key={index}
@@ -1043,6 +1300,71 @@ export default function LiteratureDecomposerPage() {
               </div>
 
               <div className="lg:col-span-2 space-y-4">
+                {/* 专属建议卡片 - AI初稿定位 */}
+                {analysisRecommendations && (
+                  <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Eye className="w-5 h-5 text-amber-600" />
+                        AI初稿定位与优化指南
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 定位说明 */}
+                      <div className="p-3 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                          💡 AI输出的定位
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          {analysisRecommendations.positioning}
+                        </p>
+                      </div>
+                      
+                      {/* 常见问题 */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="w-full justify-between" size="sm">
+                            <span className="flex items-center gap-1">
+                              <AlertCircle className="w-4 h-4" />
+                              常见问题检查清单
+                            </span>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pt-2">
+                          {analysisRecommendations.commonIssues.map((issue, i) => (
+                            <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                              ⚠️ {issue}
+                            </p>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                      
+                      {/* 优化步骤 */}
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">🔄 迭代优化步骤</p>
+                        {analysisRecommendations.optimizationGuide.map((step, i) => (
+                          <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                            {step}
+                          </p>
+                        ))}
+                      </div>
+                      
+                      {/* 材料准备 */}
+                      <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+                        <p className="text-sm font-medium text-indigo-800 dark:text-indigo-300">
+                          📁 材料准备建议
+                        </p>
+                        {analysisRecommendations.materialPreparation.map((prep, i) => (
+                          <p key={i} className="text-xs text-indigo-700 dark:text-indigo-400 mt-1">
+                            • {prep}
+                          </p>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* 批次进度 */}
                 <Card>
                   <CardHeader>
@@ -1254,6 +1576,84 @@ export default function LiteratureDecomposerPage() {
               </div>
 
               <div className="lg:col-span-2 space-y-4">
+                {/* 专属建议卡片 - 深度优化 */}
+                {clusterRecommendations && (
+                  <Card className="bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-indigo-600" />
+                        从60分到90分的优化路径
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 优化等级 */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">📈 优化等级</p>
+                        {clusterRecommendations.optimizationLevels.map((level, i) => (
+                          <div key={i} className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                            <p className="text-sm font-medium">{level.level}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              <strong>聚焦：</strong>{level.focus} | <strong>方法：</strong>{level.method}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* 材料管理 */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="w-full justify-between" size="sm">
+                            <span className="flex items-center gap-1">
+                              <FolderOpen className="w-4 h-4" />
+                              材料管理建议
+                            </span>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pt-2">
+                          {clusterRecommendations.materialManagement.map((item, i) => (
+                            <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                              {item}
+                            </p>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                      
+                      {/* 迭代指南 */}
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                          🔄 迭代优化关键
+                        </p>
+                        {clusterRecommendations.iterationGuide.map((guide, i) => (
+                          <p key={i} className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                            {guide}
+                          </p>
+                        ))}
+                      </div>
+                      
+                      {/* 何时读全文 */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="w-full justify-between" size="sm">
+                            <span className="flex items-center gap-1">
+                              <BookOpen className="w-4 h-4" />
+                              何时需要阅读文献全文？
+                            </span>
+                            <ChevronDown className="w-4 h-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pt-2">
+                          {clusterRecommendations.whenToReadFullText.map((item, i) => (
+                            <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                              {item}
+                            </p>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card className="min-h-[400px]">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -1312,7 +1712,7 @@ export default function LiteratureDecomposerPage() {
                             段落写作大纲已生成
                           </p>
                           <p className="text-sm text-indigo-700 dark:text-indigo-400">
-                            可基于此大纲开始段落级写作
+                            这是一个60分的初稿，建议根据专属建议进行迭代优化
                           </p>
                         </div>
                         <Button
@@ -1328,43 +1728,52 @@ export default function LiteratureDecomposerPage() {
                   </Card>
                 )}
 
-                {/* 使用说明 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-yellow-500" />
-                      后续写作建议
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                        <p className="font-medium text-blue-800 dark:text-blue-300 text-sm mb-1">
-                          1. 段落写作
-                        </p>
+                {/* 最终行动闭环 */}
+                {clusterOutline && !isClustering && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-yellow-500" />
+                        最终写作执行
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                          <p className="font-medium text-blue-800 dark:text-blue-300 text-sm mb-1">
+                            1. 段落写作
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            按大纲逐段落写作，引用对应文献
+                          </p>
+                        </div>
+                        <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                          <p className="font-medium text-purple-800 dark:text-purple-300 text-sm mb-1">
+                            2. 迭代优化
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            发现问题→准备材料→向AI提需求
+                          </p>
+                        </div>
+                        <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                          <p className="font-medium text-green-800 dark:text-green-300 text-sm mb-1">
+                            3. 质量检查
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            确保每个论点都有文献支撑
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <p className="text-xs text-slate-600 dark:text-slate-400">
-                          按大纲逐段落写作，引用对应文献
+                          <strong>💡 提醒：</strong>
+                          <span className="ml-1">AI生成的是初稿，优化需要「明确要求 + 提供材料」。所有文献材料已准备好，随时可调用。</span>
                         </p>
                       </div>
-                      <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
-                        <p className="font-medium text-purple-800 dark:text-purple-300 text-sm mb-1">
-                          2. 文献检索
-                        </p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">
-                          使用searchtxt工具匹配段落文献
-                        </p>
-                      </div>
-                      <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                        <p className="font-medium text-green-800 dark:text-green-300 text-sm mb-1">
-                          3. 质量检查
-                        </p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">
-                          确保每个论点都有文献支撑
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           )}
