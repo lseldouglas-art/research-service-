@@ -50,7 +50,8 @@ import {
   Filter,
   GitBranch,
   Play,
-  StepForward
+  StepForward,
+  Upload
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -234,6 +235,12 @@ export default function LiteratureSearchPage() {
   const [optimizationResult, setOptimizationResult] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
   
+  // 迭代优化V2 - 新增状态
+  const [searchGoal, setSearchGoal] = useState('');
+  const [searchResultsFile, setSearchResultsFile] = useState<File | null>(null);
+  const [searchResultsContent, setSearchResultsContent] = useState('');
+  const [isFileUploading, setIsFileUploading] = useState(false);
+  
   const resultRef = useRef<HTMLDivElement>(null);
 
   // 加载配置
@@ -414,15 +421,20 @@ export default function LiteratureSearchPage() {
     }
   };
 
-  // 迭代优化检索策略
+  // 迭代优化检索策略（新版 - 基于文献内容分析）
   const optimizeSearchStrategy = async () => {
-    if (!originalQuery.trim()) {
-      alert('请先构建矩阵式检索策略');
+    if (!searchGoal.trim()) {
+      alert('请输入检索目标');
       return;
     }
 
-    if (!falsePositiveTitles.trim()) {
-      alert('请输入误检文献标题');
+    if (!originalQuery.trim()) {
+      alert('请输入检索式');
+      return;
+    }
+
+    if (!searchResultsContent.trim()) {
+      alert('请上传检索结果文件或直接输入检索结果内容');
       return;
     }
 
@@ -434,8 +446,9 @@ export default function LiteratureSearchPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          searchGoal,
           originalQuery,
-          falsePositiveTitles,
+          searchResults: searchResultsContent,
           database: focusedDatabase,
           model: focusedModel,
           type: 'iterative-optimization',
@@ -479,6 +492,61 @@ export default function LiteratureSearchPage() {
     } finally {
       setIsOptimizing(false);
     }
+  };
+
+  // 文件上传处理
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    if (!file.name.endsWith('.txt')) {
+      alert('请上传txt格式的文件');
+      return;
+    }
+
+    setIsFileUploading(true);
+    setSearchResultsFile(file);
+
+    try {
+      const content = await file.text();
+      setSearchResultsContent(content);
+    } catch (error) {
+      console.error('Error reading file:', error);
+      alert('读取文件失败，请重试');
+    } finally {
+      setIsFileUploading(false);
+    }
+  };
+
+  // 拖拽上传处理
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    if (!file.name.endsWith('.txt')) {
+      alert('请上传txt格式的文件');
+      return;
+    }
+
+    setIsFileUploading(true);
+    setSearchResultsFile(file);
+
+    try {
+      const content = await file.text();
+      setSearchResultsContent(content);
+    } catch (error) {
+      console.error('Error reading file:', error);
+      alert('读取文件失败，请重试');
+    } finally {
+      setIsFileUploading(false);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
   };
 
   // 复制检索式
@@ -1345,17 +1413,35 @@ export default function LiteratureSearchPage() {
                           迭代优化策略
                         </CardTitle>
                         <CardDescription>
-                          分析误检文献，优化检索策略
+                          基于检索结果分析，优化检索策略
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {/* 检索目标 */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <Target className="w-4 h-4 text-red-500" />
+                            检索目标
+                          </Label>
+                          <Textarea
+                            placeholder="例如：检索所有关于'阴离子'在'锌离子电池'背景下的研究文献"
+                            value={searchGoal}
+                            onChange={(e) => setSearchGoal(e.target.value)}
+                            className="min-h-[80px]"
+                          />
+                          <p className="text-xs text-slate-500">
+                            清晰描述您本次检索的具体目标
+                          </p>
+                        </div>
+
+                        {/* 检索式 */}
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-blue-500" />
-                            原始检索式
+                            检索式
                           </Label>
                           <Textarea
-                            placeholder="粘贴上一步生成的检索式..."
+                            placeholder="粘贴步骤一生成的检索式..."
                             value={originalQuery}
                             onChange={(e) => setOriginalQuery(e.target.value)}
                             className="min-h-[100px] font-mono text-sm"
@@ -1366,9 +1452,10 @@ export default function LiteratureSearchPage() {
                               size="sm" 
                               className="w-full"
                               onClick={() => {
-                                const queryMatch = focusedResult.match(/【检索式[^\】]*】\n([\s\S]*?)(?=\n【|$)/);
-                                if (queryMatch) {
-                                  setOriginalQuery(queryMatch[1].trim());
+                                // 尝试提取检索式
+                                const codeBlockMatch = focusedResult.match(/```\n?([\s\S]*?)\n?```/);
+                                if (codeBlockMatch) {
+                                  setOriginalQuery(codeBlockMatch[1].trim());
                                 } else {
                                   setOriginalQuery(focusedResult);
                                 }
@@ -1379,22 +1466,103 @@ export default function LiteratureSearchPage() {
                           )}
                         </div>
 
+                        {/* 检索结果文件上传 */}
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
-                            <Filter className="w-4 h-4 text-red-500" />
-                            误检文献标题
+                            <FileSearch className="w-4 h-4 text-green-500" />
+                            检索结果文件
                           </Label>
-                          <Textarea
-                            placeholder="粘贴检索结果中不相关文献的标题，每行一个..."
-                            value={falsePositiveTitles}
-                            onChange={(e) => setFalsePositiveTitles(e.target.value)}
-                            className="min-h-[150px]"
-                          />
+                          <div
+                            className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                              searchResultsFile 
+                                ? 'border-green-500 bg-green-50 dark:bg-green-950/30' 
+                                : 'border-slate-300 hover:border-slate-400'
+                            }`}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                          >
+                            {searchResultsFile ? (
+                              <div className="space-y-2">
+                                <CheckCircle2 className="w-8 h-8 text-green-500 mx-auto" />
+                                <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                                  {searchResultsFile.name}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {(searchResultsFile.size / 1024).toFixed(1)} KB
+                                </p>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setSearchResultsFile(null);
+                                    setSearchResultsContent('');
+                                  }}
+                                >
+                                  <X className="mr-1 h-4 w-4" />
+                                  移除文件
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <Upload className="w-8 h-8 text-slate-400 mx-auto" />
+                                <p className="text-sm text-slate-600 dark:text-slate-400">
+                                  拖拽文件到此处或点击上传
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  支持 .txt 格式
+                                </p>
+                                <label className="cursor-pointer">
+                                  <input
+                                    type="file"
+                                    accept=".txt"
+                                    className="hidden"
+                                    onChange={handleFileUpload}
+                                    disabled={isFileUploading}
+                                  />
+                                  <Button variant="outline" size="sm" asChild>
+                                    <span>
+                                      {isFileUploading ? (
+                                        <>
+                                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                                          读取中...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FileText className="mr-1 h-4 w-4" />
+                                          选择文件
+                                        </>
+                                      )}
+                                    </span>
+                                  </Button>
+                                </label>
+                              </div>
+                            )}
+                          </div>
                           <p className="text-xs text-slate-500">
-                            输入在初步检索中发现的不相关文献标题，AI将分析其共性特征
+                            上传按日期排序的前100篇带摘要的文献信息（txt格式）
                           </p>
                         </div>
 
+                        {/* 检索结果内容（可手动编辑） */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <FileSearch className="w-4 h-4 text-purple-500" />
+                            检索结果内容
+                            {searchResultsContent && (
+                              <Badge variant="outline" className="text-xs">
+                                {searchResultsContent.split('\n').length} 行
+                              </Badge>
+                            )}
+                          </Label>
+                          <Textarea
+                            placeholder="或直接粘贴检索结果内容（标题+摘要）..."
+                            value={searchResultsContent}
+                            onChange={(e) => setSearchResultsContent(e.target.value)}
+                            className="min-h-[120px] text-sm"
+                          />
+                        </div>
+
+                        {/* 数据库选择 */}
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <Database className="w-4 h-4 text-blue-500" />
@@ -1423,14 +1591,14 @@ export default function LiteratureSearchPage() {
 
                         <Button
                           onClick={optimizeSearchStrategy}
-                          disabled={isOptimizing || !originalQuery.trim() || !falsePositiveTitles.trim()}
+                          disabled={isOptimizing || !searchGoal.trim() || !originalQuery.trim() || !searchResultsContent.trim()}
                           className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
                           size="lg"
                         >
                           {isOptimizing ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              优化中...
+                              分析中...
                             </>
                           ) : (
                             <>
@@ -1445,18 +1613,19 @@ export default function LiteratureSearchPage() {
                             <Button variant="ghost" className="w-full justify-between" size="sm">
                               <span className="flex items-center gap-1">
                                 <AlertCircle className="w-4 h-4" />
-                                优化原理
+                                使用说明
                               </span>
                               <ChevronDown className="w-4 h-4" />
                             </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="text-xs text-slate-500 space-y-1 pt-2">
-                            <p><strong>检索-分析-优化循环：</strong></p>
-                            <p>1. 执行初步检索，获取结果集</p>
-                            <p>2. 识别并记录误检文献（不相关结果）</p>
-                            <p>3. AI分析误检文献的共性特征</p>
-                            <p>4. 生成优化后的检索式，排除干扰</p>
-                            <p>5. 重复此过程直至达到理想查准率</p>
+                            <p><strong>迭代优化流程：</strong></p>
+                            <p>1. 使用步骤一生成的检索式在数据库检索</p>
+                            <p>2. 按日期排序，导出前100篇文献信息（含标题+摘要）</p>
+                            <p>3. 将导出的txt文件上传或粘贴内容</p>
+                            <p>4. AI分析每篇文献的相关度</p>
+                            <p>5. 识别低相关度文献的共性特征</p>
+                            <p>6. 生成三种优化版本的检索式</p>
                           </CollapsibleContent>
                         </Collapsible>
                       </CardContent>
@@ -1467,7 +1636,7 @@ export default function LiteratureSearchPage() {
                     <Card className="min-h-[400px]">
                       <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-lg flex items-center gap-2">
-                          <Target className="w-5 h-5" />
+                          <BarChart3 className="w-5 h-5" />
                           优化分析结果
                         </CardTitle>
                         {optimizationResult && (
@@ -1481,8 +1650,8 @@ export default function LiteratureSearchPage() {
                         {!optimizationResult && !isOptimizing ? (
                           <div className="h-[300px] flex flex-col items-center justify-center text-slate-400">
                             <RefreshCcw className="w-16 h-16 mb-4 opacity-50" />
-                            <p>输入原始检索式和误检文献标题</p>
-                            <p className="text-sm mt-2">AI将分析误检共性，生成优化策略</p>
+                            <p>上传检索结果文件，开始分析</p>
+                            <p className="text-sm mt-2">AI将逐篇分析文献相关度，识别误检原因</p>
                           </div>
                         ) : (
                           <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -1513,13 +1682,10 @@ export default function LiteratureSearchPage() {
                             <Button 
                               size="sm"
                               onClick={() => {
-                                // 提取优化后的检索式
-                                const optimizedMatch = optimizationResult.match(/【优化后检索式】\n([\s\S]*?)(?=\n【|$)/);
-                                if (optimizedMatch) {
-                                  setOriginalQuery(optimizedMatch[1].trim());
-                                  setFalsePositiveTitles('');
-                                  setOptimizationResult('');
-                                }
+                                // 清空内容，准备下一轮迭代
+                                setSearchResultsContent('');
+                                setSearchResultsFile(null);
+                                setOptimizationResult('');
                               }}
                             >
                               <RefreshCcw className="mr-1 h-4 w-4" />
@@ -1530,32 +1696,51 @@ export default function LiteratureSearchPage() {
                       </Card>
                     )}
 
-                    {/* 查全率与查准率说明 */}
+                    {/* 分析说明 */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">
-                          <Scale className="w-4 h-4" />
-                          查全率与查准率平衡
+                          <Lightbulb className="w-4 h-4 text-yellow-500" />
+                          分析说明
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                            <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">查全率 (Recall)</p>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                            <p className="font-medium text-green-800 dark:text-green-300 text-sm mb-1">高度相关</p>
                             <p className="text-xs text-slate-600 dark:text-slate-400">
-                              相关文献被检出的比例。提高方法：扩大检索范围、增加同义词
+                              直接研究核心主题的文献
                             </p>
                           </div>
-                          <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
-                            <p className="font-medium text-purple-800 dark:text-purple-300 mb-1">查准率 (Precision)</p>
+                          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                            <p className="font-medium text-blue-800 dark:text-blue-300 text-sm mb-1">中度相关</p>
                             <p className="text-xs text-slate-600 dark:text-slate-400">
-                              检出文献中相关的比例。提高方法：缩小范围、精确排除词
+                              涉及部分方面，有参考价值
+                            </p>
+                          </div>
+                          <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
+                            <p className="font-medium text-yellow-800 dark:text-yellow-300 text-sm mb-1">低度相关</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              仅涉及边缘方面，参考有限
+                            </p>
+                          </div>
+                          <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                            <p className="font-medium text-red-800 dark:text-red-300 text-sm mb-1">不相关</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              主题完全不符，需要排除
                             </p>
                           </div>
                         </div>
-                        <p className="text-xs text-slate-500 mt-3">
-                          💡 迭代优化的目标是在查全率与查准率之间取得理想平衡，构建高相关度的专业文献库
-                        </p>
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            <strong>三种优化版本：</strong>
+                            <span className="ml-2">保守优化（低风险）</span>
+                            <span className="mx-1">•</span>
+                            <span>平衡优化（推荐）</span>
+                            <span className="mx-1">•</span>
+                            <span>激进优化（高风险）</span>
+                          </p>
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
