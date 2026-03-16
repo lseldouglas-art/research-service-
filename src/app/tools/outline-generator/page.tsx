@@ -623,6 +623,49 @@ export default function OutlineGeneratorPage() {
         </div>
       ),
     },
+    {
+      title: '素材库生成',
+      icon: <FolderOpen className="w-6 h-6 text-indigo-500" />,
+      content: (
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            将文献库转化为结构化的写作素材库，实现文献与大纲章节的精确匹配：
+          </p>
+          <div className="space-y-3">
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+              <p className="font-medium text-indigo-800 dark:text-indigo-300 text-sm">🎯 章节匹配</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                每篇文献精确匹配到大纲的x.x级子章节，分为"最直接相关"和"间接相关"
+              </p>
+            </div>
+            <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+              <p className="font-medium text-purple-800 dark:text-purple-300 text-sm">📍 Zotero定位标识</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                格式：标题前2个词语 + 第一作者姓氏 + 发表年份<br/>
+                示例："Deep Learning Zhang 2024"
+              </p>
+            </div>
+            <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+              <p className="font-medium text-green-800 dark:text-green-300 text-sm">💡 核心贡献描述</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                一句话概括该论文如何支撑特定章节的写作
+              </p>
+            </div>
+            <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
+              <p className="font-medium text-orange-800 dark:text-orange-300 text-sm">📊 导出与使用</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                支持导出CSV格式，可在Zotero中批量添加标签管理文献
+              </p>
+            </div>
+          </div>
+          <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              <strong>使用建议：</strong>素材库生成后，按照章节标签整理Zotero文献库，可大幅提升写作效率。
+            </p>
+          </div>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -636,7 +679,7 @@ export default function OutlineGeneratorPage() {
               论文大纲生成器使用指南
             </DialogTitle>
             <DialogDescription className="text-base pt-2">
-              两步完成专业的论文大纲构建
+              四步完成从文献库到写作素材库的完整流程
             </DialogDescription>
           </DialogHeader>
           
