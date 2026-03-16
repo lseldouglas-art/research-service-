@@ -38,6 +38,10 @@ import {
   Briefcase,
   Lightbulb as LightbulbIcon,
   GitBranch,
+  FolderOpen,
+  Table2,
+  Save,
+  Edit3,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -94,6 +98,20 @@ const STEPS = {
     icon: ListOrdered,
     order: 2,
   },
+  'outline-confirmation': {
+    id: 'outline-confirmation',
+    name: '大纲确认与编辑',
+    description: '确认或修改大纲，准备生成素材库',
+    icon: Edit3,
+    order: 3,
+  },
+  'material-library': {
+    id: 'material-library',
+    name: '写作素材库生成',
+    description: '将文献精确匹配到大纲各章节',
+    icon: FolderOpen,
+    order: 4,
+  },
 };
 
 // 论文类型图标映射
@@ -108,7 +126,7 @@ const PAPER_TYPE_ICONS: Record<string, React.ReactNode> = {
 
 export default function OutlineGeneratorPage() {
   // 基础状态
-  const [currentStep, setCurrentStep] = useState<'literature-analysis' | 'outline-generation'>('literature-analysis');
+  const [currentStep, setCurrentStep] = useState<'literature-analysis' | 'outline-generation' | 'outline-confirmation' | 'material-library'>('literature-analysis');
   const [paperTypes, setPaperTypes] = useState<PaperType[]>([]);
   const [models, setModels] = useState<AIModel[]>([]);
   
@@ -129,6 +147,17 @@ export default function OutlineGeneratorPage() {
   // 大纲状态
   const [outlineResult, setOutlineResult] = useState('');
   const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+  
+  // 大纲编辑状态
+  const [editedOutline, setEditedOutline] = useState('');
+  const [isEditingOutline, setIsEditingOutline] = useState(false);
+  
+  // 素材库状态
+  const [materialLibrary, setMaterialLibrary] = useState('');
+  const [isGeneratingMaterial, setIsGeneratingMaterial] = useState(false);
+  
+  // 已完成步骤追踪
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   
   // 复制状态
   const [copied, setCopied] = useState(false);
@@ -329,6 +358,7 @@ export default function OutlineGeneratorPage() {
       setAnalysisResult('分析失败，请稍后重试');
     } finally {
       setIsAnalyzing(false);
+      setCompletedSteps(prev => [...prev, 'literature-analysis']);
     }
   };
 
@@ -396,6 +426,85 @@ export default function OutlineGeneratorPage() {
       setOutlineResult('生成失败，请稍后重试');
     } finally {
       setIsGeneratingOutline(false);
+      setCompletedSteps(prev => [...prev, 'outline-generation']);
+    }
+  };
+
+  // 第三步：确认大纲
+  const confirmOutline = () => {
+    if (!outlineResult.trim()) {
+      alert('请先生成论文大纲');
+      return;
+    }
+    setEditedOutline(outlineResult);
+    setCurrentStep('outline-confirmation');
+  };
+
+  // 第四步：生成素材库
+  const generateMaterialLibrary = async () => {
+    const finalOutline = editedOutline || outlineResult;
+    
+    if (!finalOutline.trim()) {
+      alert('请提供论文大纲');
+      return;
+    }
+
+    if (!analysisResult.trim()) {
+      alert('请先完成文献分析');
+      return;
+    }
+
+    setIsGeneratingMaterial(true);
+    setMaterialLibrary('');
+
+    try {
+      const response = await fetch('/api/material-library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outline: finalOutline,
+          literatureList: analysisResult,
+          model: selectedModel,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('生成失败');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let fullResult = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.content) {
+                  fullResult += data.content;
+                  setMaterialLibrary(fullResult);
+                }
+              } catch {
+                // 忽略解析错误
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setMaterialLibrary('生成失败，请稍后重试');
+    } finally {
+      setIsGeneratingMaterial(false);
+      setCompletedSteps(prev => [...prev, 'material-library']);
     }
   };
 
@@ -408,6 +517,30 @@ export default function OutlineGeneratorPage() {
     } catch {
       alert('复制失败');
     }
+  };
+
+  // 导出素材库为CSV
+  const exportMaterialLibrary = () => {
+    if (!materialLibrary.trim()) return;
+    
+    // 尝试从结果中提取表格数据
+    const lines = materialLibrary.split('\n');
+    const tableLines = lines.filter(line => line.includes('|') && !line.includes('---'));
+    
+    // 创建CSV内容
+    const csvContent = tableLines.map(line => {
+      const cells = line.split('|').filter(cell => cell.trim());
+      return cells.map(cell => `"${cell.trim()}"`).join(',');
+    }).join('\n');
+    
+    // 下载文件
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `写作素材库_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   // 按提供商分组模型
@@ -606,28 +739,43 @@ export default function OutlineGeneratorPage() {
           </div>
 
           {/* 步骤指示器 */}
-          <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
             {Object.values(STEPS).map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all text-sm ${
                     currentStep === step.id
                       ? 'bg-green-500 text-white'
+                      : completedSteps.includes(step.id)
+                      ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                   onClick={() => {
+                    // 步骤跳转验证
                     if (step.id === 'outline-generation' && !analysisResult) {
                       alert('请先完成文献分析');
                       return;
                     }
-                    setCurrentStep(step.id as 'literature-analysis' | 'outline-generation');
+                    if (step.id === 'outline-confirmation' && !outlineResult) {
+                      alert('请先生成论文大纲');
+                      return;
+                    }
+                    if (step.id === 'material-library' && !editedOutline && !outlineResult) {
+                      alert('请先确认论文大纲');
+                      return;
+                    }
+                    setCurrentStep(step.id as any);
                   }}
                 >
                   <step.icon className="w-4 h-4" />
-                  <span className="font-medium text-sm">{step.name}</span>
+                  <span className="font-medium hidden sm:inline">{step.name}</span>
+                  <span className="font-medium sm:hidden">{index + 1}</span>
+                  {completedSteps.includes(step.id) && currentStep !== step.id && (
+                    <CheckCircle2 className="w-3 h-3" />
+                  )}
                 </div>
                 {index < Object.values(STEPS).length - 1 && (
-                  <ArrowRight className="w-5 h-5 mx-2 text-slate-400" />
+                  <ArrowRight className="w-4 h-4 mx-1 text-slate-400" />
                 )}
               </div>
             ))}
@@ -1137,20 +1285,381 @@ export default function OutlineGeneratorPage() {
                             论文大纲已生成
                           </p>
                           <p className="text-sm text-green-700 dark:text-green-400">
-                            可复制大纲进行下一步写作，或修改类型重新生成
+                            确认大纲后可生成写作素材库
                           </p>
                         </div>
-                        <Button 
-                          size="sm"
-                          onClick={generateOutline}
-                        >
-                          <RefreshCw className="mr-1 h-4 w-4" />
-                          重新生成
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={generateOutline}
+                          >
+                            <RefreshCw className="mr-1 h-4 w-4" />
+                            重新生成
+                          </Button>
+                          <Button 
+                            size="sm"
+                            className="bg-gradient-to-r from-green-600 to-blue-600"
+                            onClick={() => {
+                              setEditedOutline(outlineResult);
+                              setCompletedSteps(prev => [...prev, 'outline-generation']);
+                              setCurrentStep('outline-confirmation');
+                            }}
+                          >
+                            <StepForward className="mr-1 h-4 w-4" />
+                            确认并编辑大纲
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* 第三步：大纲确认与编辑 */}
+          {currentStep === 'outline-confirmation' && (
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-4">
+                <Card className="sticky top-24">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Edit3 className="w-5 h-5 text-orange-500" />
+                      大纲确认与编辑
+                    </CardTitle>
+                    <CardDescription>
+                      确认或修改大纲，准备生成素材库
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 当前状态 */}
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">写作主题</span>
+                        <Badge variant="outline" className="max-w-[200px] truncate">
+                          {writingTopic.slice(0, 25)}...
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">论文类型</span>
+                        <Badge className="bg-purple-500">
+                          {selectedPaperType?.name || '综述论文'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* 编辑说明 */}
+                    <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
+                      <p className="text-sm text-orange-800 dark:text-orange-300">
+                        <strong>操作指南：</strong>
+                      </p>
+                      <ul className="text-xs text-orange-700 dark:text-orange-400 mt-1 space-y-1">
+                        <li>• 检查大纲结构是否合理</li>
+                        <li>• 可直接编辑修改章节名称</li>
+                        <li>• 确认后点击"生成素材库"</li>
+                      </ul>
+                    </div>
+
+                    {/* 操作按钮 */}
+                    <div className="space-y-2">
+                      <Button
+                        onClick={() => {
+                          setCompletedSteps(prev => [...prev, 'outline-confirmation']);
+                          setCurrentStep('material-library');
+                        }}
+                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+                        size="lg"
+                        disabled={!editedOutline.trim()}
+                      >
+                        <FolderOpen className="mr-2 h-4 w-4" />
+                        确认大纲并生成素材库
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setCurrentStep('outline-generation')}
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        返回重新生成大纲
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="lg:col-span-2 space-y-4">
+                <Card className="min-h-[400px]">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <GitBranch className="w-5 h-5" />
+                      编辑论文大纲
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => copyResult(editedOutline)}
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="mr-1 h-4 w-4 text-green-500" />
+                            已复制
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="mr-1 h-4 w-4" />
+                            复制
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={editedOutline}
+                      onChange={(e) => setEditedOutline(e.target.value)}
+                      placeholder="在此编辑论文大纲..."
+                      className="min-h-[500px] font-mono text-sm"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* 第四步：写作素材库生成 */}
+          {currentStep === 'material-library' && (
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-4">
+                <Card className="sticky top-24">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FolderOpen className="w-5 h-5 text-indigo-500" />
+                      写作素材库生成
+                    </CardTitle>
+                    <CardDescription>
+                      将文献精确匹配到大纲各章节
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 当前状态 */}
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">写作主题</span>
+                        <Badge variant="outline" className="max-w-[180px] truncate">
+                          {writingTopic.slice(0, 20)}...
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">论文类型</span>
+                        <Badge className="bg-purple-500 text-xs">
+                          {selectedPaperType?.name}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">文献数量</span>
+                        <Badge variant="outline" className="text-xs">
+                          {analysisResult.split('\n').filter(l => l.includes('|')).length} 篇
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* AI模型选择 */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Bot className="w-4 h-4 text-green-500" />
+                        AI模型
+                      </Label>
+                      <Select value={selectedModel} onValueChange={setSelectedModel}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(groupedModels).map(([provider, modelList]) => (
+                            <div key={provider}>
+                              <div className="px-2 py-1.5 text-sm font-semibold text-slate-500">
+                                {provider}
+                              </div>
+                              {modelList.map((m) => (
+                                <SelectItem key={m.id} value={m.id}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{m.name}</span>
+                                    {m.recommended && (
+                                      <Badge className="bg-green-500 text-white text-[10px] py-0">推荐</Badge>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 生成按钮 */}
+                    <Button
+                      onClick={generateMaterialLibrary}
+                      disabled={isGeneratingMaterial}
+                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                      size="lg"
+                    >
+                      {isGeneratingMaterial ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          生成中...
+                        </>
+                      ) : (
+                        <>
+                          <Table2 className="mr-2 h-4 w-4" />
+                          生成写作素材库
+                        </>
+                      )}
+                    </Button>
+
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between" size="sm">
+                          <span className="flex items-center gap-1">
+                            <Lightbulb className="w-4 h-4" />
+                            输出说明
+                          </span>
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="text-xs text-slate-500 space-y-1 pt-2">
+                        <p><strong>素材库包含：</strong></p>
+                        <p>• 编号：原始文献编号</p>
+                        <p>• Zotero定位：快速查找标识</p>
+                        <p>• 直接相关章节：最匹配的章节</p>
+                        <p>• 间接相关章节：次要参考章节</p>
+                        <p>• 核心贡献：一句话概括价值</p>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="lg:col-span-2 space-y-4">
+                <Card className="min-h-[400px]">
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Table2 className="w-5 h-5" />
+                      写作素材库
+                    </CardTitle>
+                    {materialLibrary && (
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => copyResult(materialLibrary)}>
+                          <Copy className="mr-1 h-4 w-4" />
+                          复制
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={exportMaterialLibrary}>
+                          <Download className="mr-1 h-4 w-4" />
+                          导出CSV
+                        </Button>
+                      </div>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    {!materialLibrary && !isGeneratingMaterial ? (
+                      <div className="h-[300px] flex flex-col items-center justify-center text-slate-400">
+                        <FolderOpen className="w-16 h-16 mb-4 opacity-50" />
+                        <p>点击"生成写作素材库"开始</p>
+                        <p className="text-sm mt-2">AI将文献精确匹配到大纲各章节</p>
+                      </div>
+                    ) : (
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <pre className="whitespace-pre-wrap bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-sm font-mono overflow-auto max-h-[600px]">
+                          {materialLibrary}
+                          {isGeneratingMaterial && (
+                            <span className="inline-block w-2 h-4 bg-indigo-500 animate-pulse ml-1" />
+                          )}
+                        </pre>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {materialLibrary && !isGeneratingMaterial && (
+                  <Card className="bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800">
+                    <CardContent className="py-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-indigo-600" />
+                        <div className="flex-1">
+                          <p className="font-medium text-indigo-800 dark:text-indigo-300">
+                            写作素材库已生成
+                          </p>
+                          <p className="text-sm text-indigo-700 dark:text-indigo-400">
+                            可导出CSV用于Zotero标签管理，或复制表格内容
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={generateMaterialLibrary}
+                          >
+                            <RefreshCw className="mr-1 h-4 w-4" />
+                            重新生成
+                          </Button>
+                          <Button 
+                            size="sm"
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600"
+                            onClick={exportMaterialLibrary}
+                          >
+                            <Download className="mr-1 h-4 w-4" />
+                            导出CSV
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* 使用说明 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-yellow-500" />
+                      后续使用建议
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                        <p className="font-medium text-blue-800 dark:text-blue-300 text-sm mb-1">
+                          1. 导入Zotero
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          使用"Zotero定位标识"快速找到文献
+                        </p>
+                      </div>
+                      <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                        <p className="font-medium text-purple-800 dark:text-purple-300 text-sm mb-1">
+                          2. 添加标签
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          按章节为文献添加主/副标签
+                        </p>
+                      </div>
+                      <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                        <p className="font-medium text-green-800 dark:text-green-300 text-sm mb-1">
+                          3. 开始写作
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          按章节组织素材，高效写作
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        <strong>💡 提示：</strong>
+                        <span className="ml-1">素材库中的"核心贡献与应用点"可直接用于论文写作，帮助您快速定位每篇文献的价值。</span>
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
