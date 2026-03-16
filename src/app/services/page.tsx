@@ -35,6 +35,13 @@ const onlineTools = [
     icon: Sparkles,
     color: 'from-green-500 to-blue-500',
   },
+  {
+    title: '论文大纲生成器',
+    description: '文献分析+智能大纲，支持6种论文类型',
+    href: '/tools/outline-generator',
+    icon: FileText,
+    color: 'from-purple-500 to-pink-500',
+  },
 ];
 
 export default function ServicesPage() {

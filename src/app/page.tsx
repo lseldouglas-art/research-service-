@@ -173,6 +173,13 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
+              <Button asChild size="lg" variant="outline" className="border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30">
+                <Link href="/tools/outline-generator">
+                  <FileText className="mr-2 h-5 w-5" />
+                  大纲生成工具
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
