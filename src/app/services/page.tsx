@@ -15,7 +15,8 @@ import {
   Target,
   Zap,
   ExternalLink,
-  Wrench
+  Wrench,
+  Split
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -41,6 +42,13 @@ const onlineTools = [
     href: '/tools/outline-generator',
     icon: FileText,
     color: 'from-purple-500 to-pink-500',
+  },
+  {
+    title: '文献分解器',
+    description: '三步流程：分割→分析→聚类',
+    href: '/tools/literature-decomposer',
+    icon: Split,
+    color: 'from-indigo-500 to-purple-500',
   },
 ];
 

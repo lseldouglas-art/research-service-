@@ -14,7 +14,8 @@ import {
   BookOpen,
   PenTool,
   Search,
-  Layers
+  Layers,
+  Split
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -177,6 +178,13 @@ export default function Home() {
                 <Link href="/tools/outline-generator">
                   <FileText className="mr-2 h-5 w-5" />
                   大纲生成工具
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30">
+                <Link href="/tools/literature-decomposer">
+                  <Split className="mr-2 h-5 w-5" />
+                  文献分解器
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
