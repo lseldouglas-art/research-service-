@@ -6,6 +6,7 @@ import {
   Sparkles,
   Menu,
   X,
+  Heart,
 } from 'lucide-react';
 import { useState } from 'react';
 import { UserMenu } from '@/components/auth';
@@ -46,6 +47,13 @@ export function Header() {
               className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors"
             >
               培训
+            </Link>
+            <Link 
+              href="/donate" 
+              className="flex items-center gap-1 text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 transition-colors"
+            >
+              <Heart className="w-4 h-4" />
+              支持
             </Link>
           </nav>
 
@@ -93,6 +101,14 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 培训
+              </Link>
+              <Link 
+                href="/donate" 
+                className="flex items-center gap-2 text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Heart className="w-4 h-4" />
+                支持我们
               </Link>
             </nav>
           </div>

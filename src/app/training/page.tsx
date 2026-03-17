@@ -25,52 +25,48 @@ export default function TrainingPage() {
     {
       module: 1,
       title: '智能定向与文献基石构建',
-      episodes: '第2-5集',
       description: '从一个宽泛的想法出发，精准定位综述选题，建立高质量文献库',
       lessons: [
-        { ep: '第2集', title: '构建初步检索策略', content: '使用AI辅助完成专业级高级检索式，解决"查不全"或"查不准"的痛点' },
-        { ep: '第3集', title: '获取初步文献数据', content: '执行检索，将文献信息高效导入Zotero，建立专业文献管理流程' },
-        { ep: '第4集', title: '智能分析与选题决策', content: 'AI辅助领域分析报告，识别研究空白，推荐具体综述选题方向' },
-        { ep: '第5集', title: '精准文献重检索', content: '矩阵式检索策略，构建100-600篇高度相关的专业文献库' },
+        { title: '构建初步检索策略', content: '使用AI辅助完成专业级高级检索式，解决"查不全"或"查不准"的痛点' },
+        { title: '获取初步文献数据', content: '执行检索，将文献信息高效导入Zotero，建立专业文献管理流程' },
+        { title: '智能分析与选题决策', content: 'AI辅助领域分析报告，识别研究空白，推荐具体综述选题方向' },
+        { title: '精准文献重检索', content: '矩阵式检索策略，构建100-600篇高度相关的专业文献库' },
       ],
       color: 'from-blue-500 to-cyan-500',
     },
     {
       module: 2,
       title: '结构化大纲构建与素材整理',
-      episodes: '第6-7集',
       description: '将无序文献转化为逻辑严密、章节分明的写作蓝图',
       lessons: [
-        { ep: '第6.1集', title: '数据驱动的综述大纲', content: 'AI分析文献相关性，构建经过文献数量验证的可执行写作大纲' },
-        { ep: '第7集', title: '文献智能分类与结构化管理', content: '使用工具箱自动将章节标签和论文编号批量写入Zotero（流程已升级）' },
+        { title: '数据驱动的综述大纲', content: 'AI分析文献相关性，构建经过文献数量验证的可执行写作大纲' },
+        { title: '文献智能分类与结构化管理', content: '使用工具箱自动将章节标签和论文编号批量写入Zotero（流程已升级）' },
       ],
       color: 'from-purple-500 to-pink-500',
     },
     {
       module: 3,
       title: 'AI辅助写作与质量精修',
-      episodes: '第8-13集',
       description: '完成论文初稿，进行事实核查、语言润色和原创性重写',
       lessons: [
-        { ep: '第8集', title: '分章节智能写作', content: '三轮AI辅助写作流程：深度分析、论点聚类、引用补全，完成段落初稿' },
-        { ep: '第9.1集', title: '段落精修（对标范文）', content: '对标顶刊范文，明确修改方向，提升学术表达水平' },
-        { ep: '第9.2集', title: '事实核查与准确性验证', content: '系统化核查原文引用，确保内容准确可靠' },
-        { ep: '第10集', title: '引言构建', content: '使用特化提示词，完成引言部分的撰写和精修' },
-        { ep: '第11集', title: '结论与展望构建', content: '系统化完成论文收尾部分，确保逻辑完整' },
-        { ep: '第13集', title: '降低AIGC率与原创性重塑', content: '掌握"用自己的话重说一遍"核心心法，通过AIGC检测' },
-        { ep: '第14集', title: '摘要构建', content: '完成论文门面部分，打造高质量摘要' },
+        { title: '分章节智能写作', content: '三轮AI辅助写作流程：深度分析、论点聚类、引用补全，完成段落初稿' },
+        { title: '段落精修（对标范文）', content: '对标顶刊范文，明确修改方向，提升学术表达水平' },
+        { title: '事实核查与准确性验证', content: '系统化核查原文引用，确保内容准确可靠' },
+        { title: '引言构建', content: '使用特化提示词，完成引言部分的撰写和精修' },
+        { title: '结论与展望构建', content: '系统化完成论文收尾部分，确保逻辑完整' },
+        { title: '降低AIGC率与原创性重塑', content: '掌握"用自己的话重说一遍"核心心法，通过AIGC检测' },
+        { title: '摘要构建', content: '完成论文门面部分，打造高质量摘要' },
       ],
       color: 'from-orange-500 to-red-500',
     },
     {
       module: 4,
       title: '收尾工作与格式规范',
-      episodes: '第12、15、16集',
       description: '完成配图、参考文献格式化等收尾工作，准备最终提交',
       lessons: [
-        { ep: '第12集', title: '论文配图策略与获取', content: 'AI分析顶刊配图策略，制定配图计划，处理版权授权' },
-        { ep: '第15集', title: '参考文献插入（常规）', content: '使用Zotero Word插件"边写边引"的标准流程' },
-        { ep: '第16集', title: '参考文献管理（推荐）', content: '使用自动化脚本一键完成引用替换和参考文献列表生成' },
+        { title: '论文配图策略与获取', content: 'AI分析顶刊配图策略，制定配图计划，处理版权授权' },
+        { title: '参考文献插入（常规）', content: '使用Zotero Word插件"边写边引"的标准流程' },
+        { title: '参考文献管理（推荐）', content: '使用自动化脚本一键完成引用替换和参考文献列表生成' },
       ],
       color: 'from-green-500 to-teal-500',
     },
@@ -103,7 +99,7 @@ export default function TrainingPage() {
     {
       icon: Video,
       title: '系统化课程',
-      description: '16集完整视频课程，覆盖从选题到投稿全流程',
+      description: '完整视频课程，覆盖从选题到投稿全流程',
     },
     {
       icon: FileText,
@@ -207,9 +203,6 @@ export default function TrainingPage() {
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-white">{module.title}</h3>
-                          <Badge variant="secondary" className="bg-white/20 text-white border-0 mt-1">
-                            {module.episodes}
-                          </Badge>
                         </div>
                       </div>
                     </div>
@@ -222,7 +215,7 @@ export default function TrainingPage() {
                         <AccordionItem key={lIndex} value={`lesson-${index}-${lIndex}`}>
                           <AccordionTrigger className="hover:no-underline">
                             <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="shrink-0">{lesson.ep}</Badge>
+                              <Badge variant="outline" className="shrink-0">{lIndex + 1}</Badge>
                               <span className="font-medium text-left">{lesson.title}</span>
                             </div>
                           </AccordionTrigger>
