@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Header } from '@/components/layout/Header';
 import { 
   Heart,
@@ -13,11 +14,14 @@ import {
   Sparkles,
   Gift,
   CheckCircle2,
-  ArrowRight,
   Users,
   Star,
   MessageCircle,
+  Mail,
+  Send,
+  Loader2,
 } from 'lucide-react';
+import Image from 'next/image';
 
 const presetAmounts = [
   { value: 10, icon: Coffee, label: '一杯咖啡', description: '感谢您的支持' },
@@ -26,16 +30,41 @@ const presetAmounts = [
   { value: 100, icon: Sparkles, label: '一份力量', description: '加速产品创新' },
 ];
 
-const supporters = [
-  { name: '张**', amount: 100, message: '非常好用的工具，感谢团队！', time: '3天前' },
-  { name: '李**', amount: 50, message: '希望能增加更多功能', time: '1周前' },
-  { name: '王**', amount: 20, message: '支持开源项目', time: '2周前' },
-];
+interface Feedback {
+  id: string;
+  name: string;
+  content: string;
+  createdAt: string;
+}
 
 export default function DonatePage() {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
   const [showQRCode, setShowQRCode] = useState(false);
+  
+  // 意见信箱状态
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackContent, setFeedbackContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedbackError, setFeedbackError] = useState('');
+
+  // 加载反馈列表
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const fetchFeedbacks = async () => {
+    try {
+      const response = await fetch('/api/feedback');
+      const data = await response.json();
+      if (data.success) {
+        setFeedbacks(data.data);
+      }
+    } catch (error) {
+      console.error('加载反馈失败:', error);
+    }
+  };
 
   const handleAmountSelect = (amount: number) => {
     setSelectedAmount(amount);
@@ -56,6 +85,57 @@ export default function DonatePage() {
       return;
     }
     setShowQRCode(true);
+  };
+
+  // 提交反馈
+  const handleSubmitFeedback = async () => {
+    if (!feedbackContent.trim()) {
+      setFeedbackError('请输入反馈内容');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedbackError('');
+
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: feedbackName,
+          content: feedbackContent,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setFeedbackContent('');
+        setFeedbackName('');
+        fetchFeedbacks();
+      } else {
+        setFeedbackError(data.error || '提交失败');
+      }
+    } catch (error) {
+      setFeedbackError('提交失败，请稍后重试');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 格式化时间
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '刚刚';
+    if (minutes < 60) return `${minutes}分钟前`;
+    if (hours < 24) return `${hours}小时前`;
+    if (days < 7) return `${days}天前`;
+    return date.toLocaleDateString();
   };
 
   return (
@@ -165,26 +245,38 @@ export default function DonatePage() {
                     <div className="grid md:grid-cols-2 gap-6">
                       {/* 微信支付 */}
                       <div className="text-center">
-                        <div className="w-48 h-48 mx-auto bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center mb-3">
-                          <div className="text-center text-slate-500">
-                            <MessageCircle className="w-12 h-12 mx-auto mb-2" />
-                            <p className="text-sm">微信支付二维码</p>
-                            <p className="text-xs mt-1">¥{finalAmount}</p>
-                          </div>
+                        <div className="w-48 h-48 mx-auto bg-white rounded-xl overflow-hidden border border-slate-200 mb-3 flex items-center justify-center">
+                          <Image
+                            src="/images/wechat-pay.png"
+                            alt="微信支付二维码"
+                            width={192}
+                            height={192}
+                            className="w-full h-full object-contain"
+                          />
                         </div>
-                        <p className="font-medium">微信支付</p>
+                        <p className="font-medium flex items-center justify-center gap-2">
+                          <MessageCircle className="w-4 h-4 text-green-500" />
+                          微信支付
+                        </p>
                       </div>
                       
                       {/* 支付宝 */}
                       <div className="text-center">
-                        <div className="w-48 h-48 mx-auto bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center mb-3">
-                          <div className="text-center text-slate-500">
-                            <Gift className="w-12 h-12 mx-auto mb-2" />
-                            <p className="text-sm">支付宝二维码</p>
-                            <p className="text-xs mt-1">¥{finalAmount}</p>
-                          </div>
+                        <div className="w-48 h-48 mx-auto bg-white rounded-xl overflow-hidden border border-slate-200 mb-3 flex items-center justify-center">
+                          <Image
+                            src="/images/alipay.jpg"
+                            alt="支付宝二维码"
+                            width={192}
+                            height={192}
+                            className="w-full h-full object-contain"
+                          />
                         </div>
-                        <p className="font-medium">支付宝</p>
+                        <p className="font-medium flex items-center justify-center gap-2">
+                          <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21.422 15.358c-3.273-1.204-6.174-2.46-7.715-3.35.363-.68.672-1.413.91-2.193H9.637V8.622h5.486V7.55H9.637V5.463H7.528c-.307 0-.554.247-.554.554v1.534H1.9v1.07h5.074v1.193H2.852v1.067h8.108c-.192.54-.42 1.056-.684 1.534-2.046-.732-4.258-1.182-6.39-1.182-2.886 0-4.816 1.127-4.816 3.033 0 1.854 1.85 3.003 4.622 3.003 2.303 0 4.23-.892 5.713-2.436 2.037 1.092 5.39 2.416 9.25 3.685L21.422 15.358zM4.076 16.37c-1.715 0-2.673-.61-2.673-1.554 0-.982.997-1.58 2.673-1.58 1.707 0 3.54.41 5.207 1.112C8.095 15.623 6.24 16.37 4.076 16.37z"/>
+                          </svg>
+                          支付宝
+                        </p>
                       </div>
                     </div>
                     
@@ -198,39 +290,82 @@ export default function DonatePage() {
                 </Card>
               )}
 
-              {/* 支持者寄语 */}
+              {/* 用户意见信箱 */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-blue-500" />
-                    支持者寄语
+                    <Mail className="w-5 h-5 text-blue-500" />
+                    用户意见信箱
                   </CardTitle>
+                  <CardDescription>
+                    您的意见对我们很重要，欢迎提出宝贵建议
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {supporters.map((supporter, index) => (
-                      <div 
-                        key={index}
-                        className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                <CardContent className="space-y-4">
+                  {/* 提交表单 */}
+                  <div className="space-y-3">
+                    <div className="flex gap-3">
+                      <Input
+                        placeholder="您的称呼（选填）"
+                        value={feedbackName}
+                        onChange={(e) => setFeedbackName(e.target.value)}
+                        className="flex-shrink-0 w-32"
+                      />
+                      <Textarea
+                        placeholder="请输入您的意见或建议..."
+                        value={feedbackContent}
+                        onChange={(e) => setFeedbackContent(e.target.value)}
+                        className="flex-1 min-h-[80px]"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      {feedbackError && (
+                        <p className="text-sm text-red-500">{feedbackError}</p>
+                      )}
+                      <Button
+                        onClick={handleSubmitFeedback}
+                        disabled={isSubmitting}
+                        className="ml-auto"
                       >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium">
-                          {supporter.name.charAt(0)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium">{supporter.name}</span>
-                            <span className="text-xs text-slate-500">{supporter.time}</span>
-                          </div>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
-                            {supporter.message}
-                          </p>
-                          <Badge variant="outline" className="mt-2 text-pink-600 border-pink-200">
-                            捐赠 ¥{supporter.amount}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            提交中...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            提交意见
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* 反馈列表 */}
+                  {feedbacks.length > 0 && (
+                    <div className="border-t pt-4 mt-4">
+                      <p className="text-sm text-slate-500 mb-3">
+                        最近 {feedbacks.length} 条意见
+                      </p>
+                      <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                        {feedbacks.map((feedback) => (
+                          <div
+                            key={feedback.id}
+                            className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium text-sm">{feedback.name}</span>
+                              <span className="text-xs text-slate-500">{formatTime(feedback.createdAt)}</span>
+                            </div>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              {feedback.content}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -307,7 +442,10 @@ export default function DonatePage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                   <p>如有任何问题或建议，欢迎联系我们：</p>
-                  <p className="text-pink-600">support@example.com</p>
+                  <p className="text-pink-600 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    lseldouglas@gmail.com
+                  </p>
                 </CardContent>
               </Card>
             </div>
