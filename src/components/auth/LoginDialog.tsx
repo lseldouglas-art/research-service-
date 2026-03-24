@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { 
   Loader2, 
-  MessageCircle, 
   User,
 } from 'lucide-react';
 
@@ -30,7 +29,7 @@ export function LoginDialog({ open, onOpenChange, onLoginSuccess }: LoginDialogP
     setLoginMethod(provider);
 
     try {
-      // 获取授权URL
+      // 获取OAuth授权URL
       const response = await fetch(`/api/auth/oauth?provider=${provider}`);
       const data = await response.json();
 
@@ -41,30 +40,16 @@ export function LoginDialog({ open, onOpenChange, onLoginSuccess }: LoginDialogP
         return;
       }
 
-      // 显示提示（实际项目中需要处理OAuth回调）
-      const message = provider === 'wechat'
-        ? '微信登录需要配置真实的微信开放平台AppID和AppSecret。\n\n请查看项目文档配置OAuth参数，或使用游客模式体验。'
-        : 'QQ登录需要配置真实的QQ互联AppID和AppSecret。\n\n请查看项目文档配置OAuth参数，或使用游客模式体验。';
-      
-      alert(message);
-      
-      // 模拟登录成功（演示用）
-      const mockUser = {
-        id: `mock-${Date.now()}`,
-        nickname: provider === 'wechat' ? '微信用户' : 'QQ用户',
-        avatar: '',
-      };
-      
-      // 存储到本地
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', `mock-token-${Date.now()}`);
-      
-      onLoginSuccess(mockUser);
-      onOpenChange(false);
-    } catch (error) {
+      // 跳转到第三方授权页面
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      } else {
+        throw new Error('未获取到授权URL');
+      }
+
+    } catch (error: any) {
       console.error('Login error:', error);
-      alert('登录失败，请稍后重试');
-    } finally {
+      alert(`登录失败: ${error.message}`);
       setIsLoading(false);
       setLoginMethod(null);
     }
@@ -110,7 +95,7 @@ export function LoginDialog({ open, onOpenChange, onLoginSuccess }: LoginDialogP
               </svg>
             )}
             <span className="text-green-700 dark:text-green-400">
-              {isLoading && loginMethod === 'wechat' ? '登录中...' : '微信登录'}
+              {isLoading && loginMethod === 'wechat' ? '跳转中...' : '微信登录'}
             </span>
           </Button>
 
@@ -129,7 +114,7 @@ export function LoginDialog({ open, onOpenChange, onLoginSuccess }: LoginDialogP
               </svg>
             )}
             <span className="text-blue-700 dark:text-blue-400">
-              {isLoading && loginMethod === 'qq' ? '登录中...' : 'QQ登录'}
+              {isLoading && loginMethod === 'qq' ? '跳转中...' : 'QQ登录'}
             </span>
           </Button>
 

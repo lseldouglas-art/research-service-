@@ -3,6 +3,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { UserNoticeDialog } from '@/components/auth/UserNoticeDialog';
 import { LoginDialog } from '@/components/auth/LoginDialog';
+import { OAuthCallback } from '@/components/auth/OAuthCallback';
 
 interface User {
   id: string;
@@ -105,6 +106,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }}
     >
       {children}
+      
+      {/* OAuth回调处理 */}
+      <OAuthCallback />
       
       {/* 用户声明弹窗 */}
       <UserNoticeDialog
